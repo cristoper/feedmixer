@@ -1,6 +1,12 @@
 import datetime
 import feedparser
 import feedgenerator
+import logging
+
+from FeedCache import *
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 NUM_KEEP = 2
 
@@ -13,10 +19,12 @@ feeds = ['http://notwithoutsincerity.in1accord.net/rss',
 mixed_entries = []
 atom_feed = feedgenerator.Atom1Feed(title="Mixed",
         link="", description="description")
+cache = FeedCache('mixercache')
 
 # fetch and parse feeds
 for feed in feeds:
-    f = feedparser.parse(feed)
+    #f = feedparser.parse(feed)
+    f = cache.fetch(feed)
     newest = f.entries[0:NUM_KEEP]
     # use feed author if individual entries are missing
     # author property
