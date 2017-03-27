@@ -50,6 +50,7 @@ class FeedCache:
             
             logger.info("Stale feed found in cache: {}".format(url))
             etag = cached.get('etag')
+            etag = etag.lstrip('W/') if etag else None # strip weak etag indicato
             lastmod = cached.get('modified')
         else: logger.info("No feed in cache for url: {}".format(url))
 
