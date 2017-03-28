@@ -3,7 +3,7 @@ import feedparser
 import feedgenerator
 import logging
 
-from FeedCache import *
+from feedcache import *
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
