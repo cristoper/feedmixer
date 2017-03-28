@@ -19,7 +19,7 @@ feeds = ['http://notwithoutsincerity.in1accord.net/rss',
 mixed_entries = []
 atom_feed = feedgenerator.Atom1Feed(title="Mixed",
         link="", description="description")
-cache = FeedCache('mixercache')
+cache = FeedCache('mixercache.db')
 
 # fetch and parse feeds
 for feed in feeds:
