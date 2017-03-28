@@ -13,7 +13,17 @@ class FeedCache:
     library. Thread safe but not multi-process safe (doesn't use file system
     lock)."""
 
-    MIN_AGE = 600 # minimum time to keep feed in hard cache
+    # minimum time to keep feed in hard cache
+    # This can be overridden by a smaller max-age attribute in a cache-control
+    # http header
+    MIN_AGE = 1200
+
+    class Feed:
+        """A wrapper class around a parsed feed so we can add some metadata (like
+        an expire time)."""
+        def __init__(self, feed, expire_dt=datetime.datetime.utcnow()):
+            self.feed = feed
+            self.expire_dt = expire_dt
 
     def __init__(self, db_path):
         logger.debug("Initialized cache: {}".format(db_path))
@@ -46,18 +56,19 @@ class FeedCache:
             if now < cached.expire_dt:
                 # If cache is fresh, use it without further ado
                 logger.info("Fresh feed found in cache: {}".format(url))
-                return cached
+                return cached.feed
             
             logger.info("Stale feed found in cache: {}".format(url))
-            etag = cached.get('etag')
+            etag = cached.feed.get('etag')
             etag = etag.lstrip('W/') if etag else None # strip weak etag indicato
-            lastmod = cached.get('modified')
+            lastmod = cached.feed.get('modified')
         else: logger.info("No feed in cache for url: {}".format(url))
 
         # Cache wasn't fresh in db, so we'll request it, but give origin etag
         # and/or last-modified headers (if available) so we only fetch and
         # parse it if it is new/updated.
         feed = feedparser.parse(url, etag=etag, modified=lastmod)
+        fetched = FeedCache.Feed(feed)
         logger.debug("Got feed from feedparser: {}".format(feed))
 
         # TODO: error handling (len(feed.entries) < 1; feed.status == 404, 410, etc)
@@ -65,13 +76,13 @@ class FeedCache:
         if feed.status == NOT_MODIFIED:
             # Source says feed is still fresh
             logger.info("Server says feed is still fresh: {}".format(url))
-            feed = cached
+            fetched.feed = cached.feed
 
         # Add to/update cache with new expire_dt
         # Using max-age parsed from cache-control header, if it exists
-        cc_header = feed.headers.get('cache-control')
+        cc_header = fetched.feed.headers.get('cache-control')
         ma_match = re.search('max-age=(\d+)', cc_header)
         min_age = min(int(ma_match.group(1)), FeedCache.MIN_AGE) if ma_match else MIN_AGE
-        feed.expire_dt = now + datetime.timedelta(seconds=min_age)
-        self.update(url, feed)
-        return feed
+        fetched.expire_dt = now + datetime.timedelta(seconds=min_age)
+        self.update(url, fetched)
+        return fetched.feed
