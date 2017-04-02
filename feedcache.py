@@ -4,7 +4,7 @@ import datetime
 from http.client import NOT_MODIFIED, OK
 import re
 import logging
-import gdbm_shelve
+from locked_shelf import RWShelf
 
 logger = logging.getLogger(__name__)
 
@@ -28,17 +28,17 @@ class FeedCache:
     def __init__(self, db_path):
         logger.debug("Initialized cache: {}".format(db_path))
         self.path = db_path
-    
+
     def get(self, url):
         """Get a feed from the cache db by its url."""
         if os.path.exists(self.path):
-            with gdbm_shelve.open(self.path, flag='r') as shelf:
+            with RWShelf(self.path, flag='r') as shelf:
                 return shelf.get(url)
         return None
 
     def update(self, url, feed):
         """Update a feed in the cache db."""
-        with gdbm_shelve.open(self.path, flag='c') as shelf:
+        with RWShelf(self.path, flag='c') as shelf:
             logger.info("Updated feed for url: {}".format(url))
             shelf[url] = feed
 
