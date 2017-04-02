@@ -80,7 +80,10 @@ class FeedCache:
         # Using max-age parsed from cache-control header, if it exists
         cc_header = fetched.feed.headers.get('cache-control')
         ma_match = re.search('max-age=(\d+)', cc_header)
-        min_age = min(int(ma_match.group(1)), FeedCache.MIN_AGE) if ma_match else MIN_AGE
+        if ma_match:
+            min_age = min(int(ma_match.group(1)), FeedCache.MIN_AGE)
+        else:
+            FeedCache.MIN_AGE
         fetched.expire_dt = now + datetime.timedelta(seconds=min_age)
         self.update(url, fetched)
         return fetched.feed
