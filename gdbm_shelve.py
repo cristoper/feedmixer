@@ -6,6 +6,9 @@ This module provides an `open` function which forces the use of GNU dbm. This is
 less portable, but the advantage is that GNU dbm provides locking whereas other
 implementations may not.
 
+However, the GNU dbm locks are non-blocking, so to make practical use of them
+requires polling on an exception. (TODO: example)
+
 shelve docs: https://docs.python.org/3/library/shelve.html
 shelve.py: https://github.com/python/cpython/blob/master/Lib/shelve.py
 """
