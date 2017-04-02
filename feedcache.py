@@ -10,13 +10,7 @@ logger = logging.getLogger(__name__)
 
 class FeedCache:
     """A wrapper for feedparser which handles caching using the standard shelve
-    library. Thread safe but not multi-process safe (doesn't use file system
-    lock)."""
-
-    # minimum time to keep feed in hard cache
-    # This can be overridden by a smaller max-age attribute in a cache-control
-    # http header
-    MIN_AGE = 1200
+    library."""
 
     class Feed:
         """A wrapper class around a parsed feed so we can add some metadata (like
@@ -25,9 +19,16 @@ class FeedCache:
             self.feed = feed
             self.expire_dt = expire_dt
 
-    def __init__(self, db_path):
+    def __init__(self, db_path: str, min_age: int = 1200):
+        """
+        db_path: Path to the dbm file which holds the cache
+        min_age: Minimum time (seconds) to keep feed in hard cache. This is
+        overridden by a smaller max-age attribute in the received cache-control
+        http header (default: 1200)
+        """
         logger.debug("Initialized cache: {}".format(db_path))
         self.path = db_path
+        self.min_age = min_age
 
     def get(self, url):
         """Get a feed from the cache db by its url."""
@@ -81,9 +82,9 @@ class FeedCache:
         cc_header = fetched.feed.headers.get('cache-control')
         ma_match = re.search('max-age=(\d+)', cc_header)
         if ma_match:
-            min_age = min(int(ma_match.group(1)), FeedCache.MIN_AGE)
+            min_age = min(int(ma_match.group(1)), self.min_age)
         else:
-            FeedCache.MIN_AGE
+            self.min_age
         fetched.expire_dt = now + datetime.timedelta(seconds=min_age)
         self.update(url, fetched)
         return fetched.feed
