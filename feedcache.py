@@ -1,12 +1,18 @@
+"""
+The FeedCache class provided by this module adds [thread- and multiprocess-safe]
+caching to Mark Pilgrim's feedparser (https://pypi.python.org/pypi/feedparser)
+"""
+
 import feedparser
 import os.path
 import datetime
-from http.client import NOT_MODIFIED, OK
+from http.client import NOT_MODIFIED
 import re
 import logging
 from locked_shelf import RWShelf
 
 logger = logging.getLogger(__name__)
+
 
 class FeedCache:
     """A wrapper for feedparser which handles caching using the standard shelve
@@ -47,7 +53,7 @@ class FeedCache:
         etag = None
         lastmod = None
         now = datetime.datetime.now()
-        
+
         logger.debug("Fetching feed for url: {}".format(url))
         cached = self.get(url)
         if cached:
@@ -56,22 +62,26 @@ class FeedCache:
                 # If cache is fresh, use it without further ado
                 logger.info("Fresh feed found in cache: {}".format(url))
                 return cached.feed
-            
+
             logger.info("Stale feed found in cache: {}".format(url))
             etag = cached.feed.get('etag')
-            etag = etag.lstrip('W/') if etag else None # strip weak etag indicato
+            etag = etag.lstrip('W/') if etag else None  # strip weak etag
             lastmod = cached.feed.get('modified')
-        else: logger.info("No feed in cache for url: {}".format(url))
+        else:
+            logger.info("No feed in cache for url: {}".format(url))
 
         # Cache wasn't fresh in db, so we'll request it, but give origin etag
         # and/or last-modified headers (if available) so we only fetch and
         # parse it if it is new/updated.
+        logger.info("Fetching from remote {}".format(url))
         feed = feedparser.parse(url, etag=etag, modified=lastmod)
         fetched = FeedCache.Feed(feed)
-        logger.debug("Got feed from feedparser: {}".format(feed))
+        logger.info("Got feed from feedparser {}".format(url))
+        logger.debug("Feed: {}".format(feed))
 
-        # TODO: error handling (len(feed.entries) < 1; feed.status == 404, 410, etc)
-        
+        # TODO: error handling (len(feed.entries) < 1; feed.status == 404, 410,
+        # etc)
+
         if feed.status == NOT_MODIFIED:
             # Source says feed is still fresh
             logger.info("Server says feed is still fresh: {}".format(url))
