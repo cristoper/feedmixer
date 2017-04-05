@@ -1,6 +1,8 @@
 """
 The FeedCache class provided by this module adds [thread- and multiprocess-safe]
 caching to Mark Pilgrim's feedparser (https://pypi.python.org/pypi/feedparser)
+
+feedparser on github: https://github.com/kurtmckee/feedparser
 """
 
 import feedparser
@@ -16,45 +18,64 @@ logger = logging.getLogger(__name__)
 
 class FeedCache:
     """A wrapper for feedparser which handles caching using the standard shelve
-    library."""
+    library. Thread and multiprocess safe."""
 
     class Feed:
         """A wrapper class around a parsed feed so we can add some metadata (like
         an expire time)."""
-        def __init__(self, feed, expire_dt=datetime.datetime.utcnow()):
+        def __init__(self, feed: feedparser.util.FeedParserDict, expire_dt:
+                     datetime.datetime = datetime.datetime.utcnow()):
             self.feed = feed
             self.expire_dt = expire_dt
 
     def __init__(self, db_path: str, min_age: int = 1200):
         """
-        db_path: Path to the dbm file which holds the cache
-        min_age: Minimum time (seconds) to keep feed in hard cache. This is
-        overridden by a smaller max-age attribute in the received cache-control
-        http header (default: 1200)
+        Args:
+            db_path: Path to the dbm file which holds the cache
+            min_age: Minimum time (seconds) to keep feed in hard cache. This is
+            overridden by a smaller max-age attribute in the received
+            cache-control http header (default: 1200)
         """
-        logger.debug("Initialized cache: {}".format(db_path))
         self.path = db_path
         self.min_age = min_age
 
-    def get(self, url):
+    def get(self, url: str) -> feedparser.util.FeedParserDict:
         """Get a feed from the cache db by its url."""
         if os.path.exists(self.path):
             with RWShelf(self.path, flag='r') as shelf:
                 return shelf.get(url)
         return None
 
-    def update(self, url, feed):
+    def update(self, url: str, feed: feedparser.util.FeedParserDict):
         """Update a feed in the cache db."""
         with RWShelf(self.path, flag='c') as shelf:
             logger.info("Updated feed for url: {}".format(url))
             shelf[url] = feed
 
-    def fetch(self, url):
+    def fetch(self, url) -> feedparser.util.FeedParserDict:
+        """Fetch an RSS/Atom feed given a URL.
+
+        If the feed is in the cache and it is still fresh (younger than
+        `min_age`), then it is returned directly.
+
+        If the feed is older than `min_age`, it is re-fetched from the remote
+        server (using etag and/or last-modified headers if available so that the
+        server can return a cached version).
+
+        When the response is received from the server, then the feed is updated
+        in the on-disk cache.
+
+        Args:
+            url: the url of the feed to fetch
+
+        Returns:
+            A feedparser feed dictionary.
+        """
         etag = None
         lastmod = None
         now = datetime.datetime.now()
 
-        logger.debug("Fetching feed for url: {}".format(url))
+        logger.info("Fetching feed for url: {}".format(url))
         cached = self.get(url)
         if cached:
             logger.info("Got feed from cache for url: {}".format(url))
