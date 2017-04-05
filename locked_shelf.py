@@ -131,10 +131,10 @@ class RWShelf(object):
             ltype = fcntl.LOCK_SH
         else:
             ltype = fcntl.LOCK_EX
-        self.shelf = shelve.open(filename, flag)
         self.fd = open(filename, 'r+')
         flock(self.fd, ltype)
         logger.info("Acquired lock for {} ({})".format(filename, ltype))
+        self.shelf = shelve.open(filename, flag)
 
     def close(self):
         """
