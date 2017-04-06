@@ -49,6 +49,8 @@ class FeedCache:
         if os.path.exists(self.path):
             with self.shelf_t(self.path, flag='r') as shelf:
                 return shelf.get(url)
+        else:
+            logger.info("Cache db file does not exist at {}".format(self.path))
         return None
 
     def update(self, url: str, feed: feedparser.util.FeedParserDict):
