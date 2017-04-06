@@ -11,7 +11,10 @@ import datetime
 from http.client import NOT_MODIFIED
 import re
 import logging
-from locked_shelf import RWShelf
+from locked_shelf import MutexShelf, RWShelf
+from typing import Union, Type
+
+locked_shelf_t = Union[Type[RWShelf], Type[MutexShelf]]
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +31,8 @@ class FeedCache:
             self.feed = feed
             self.expire_dt = expire_dt
 
-    def __init__(self, db_path: str, min_age: int = 1200):
+    def __init__(self, db_path: str, min_age: int = 1200, shelf_t:
+                 locked_shelf_t=RWShelf) -> None:
         """
         Args:
             db_path: Path to the dbm file which holds the cache
@@ -36,19 +40,20 @@ class FeedCache:
             overridden by a smaller max-age attribute in the received
             cache-control http header (default: 1200)
         """
+        self.shelf_t = shelf_t
         self.path = db_path
         self.min_age = min_age
 
     def get(self, url: str) -> feedparser.util.FeedParserDict:
         """Get a feed from the cache db by its url."""
         if os.path.exists(self.path):
-            with RWShelf(self.path, flag='r') as shelf:
+            with self.shelf_t(self.path, flag='r') as shelf:
                 return shelf.get(url)
         return None
 
     def update(self, url: str, feed: feedparser.util.FeedParserDict):
         """Update a feed in the cache db."""
-        with RWShelf(self.path, flag='c') as shelf:
+        with self.shelf_t(self.path, flag='c') as shelf:
             logger.info("Updated feed for url: {}".format(url))
             shelf[url] = feed
 
