@@ -27,7 +27,7 @@ class FeedCache:
         """A wrapper class around a parsed feed so we can add some metadata (like
         an expire time)."""
         def __init__(self, feed: feedparser.util.FeedParserDict, expire_dt:
-                     datetime.datetime = datetime.datetime.utcnow()):
+                     datetime.datetime = datetime.datetime.utcnow()) -> None:
             self.feed = feed
             self.expire_dt = expire_dt
 
