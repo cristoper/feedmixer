@@ -12,7 +12,7 @@ from http.client import NOT_MODIFIED
 import re
 import logging
 from locked_shelf import MutexShelf, RWShelf
-from typing import Union, Type
+from typing import Union, Type, Callable
 
 locked_shelf_t = Union[Type[RWShelf], Type[MutexShelf]]
 
@@ -31,8 +31,9 @@ class FeedCache:
             self.feed = feed
             self.expire_dt = expire_dt
 
-    def __init__(self, db_path: str, min_age: int = 1200, shelf_t:
-                 locked_shelf_t=RWShelf) -> None:
+    def __init__(self, db_path: str, min_age: int = 1200,
+                 shelf_t: locked_shelf_t=RWShelf,
+                 parse: Callable =feedparser.parse) -> None:
         """
         Args:
             db_path: Path to the dbm file which holds the cache
@@ -43,6 +44,7 @@ class FeedCache:
         self.shelf_t = shelf_t
         self.path = db_path
         self.min_age = min_age
+        self.parse = parse
 
     def get(self, url: str) -> feedparser.util.FeedParserDict:
         """Get a feed from the cache db by its url."""
@@ -102,7 +104,7 @@ class FeedCache:
         # and/or last-modified headers (if available) so we only fetch and
         # parse it if it is new/updated.
         logger.info("Fetching from remote {}".format(url))
-        feed = feedparser.parse(url, etag=etag, modified=lastmod)
+        feed = self.parse(url, etag=etag, modified=lastmod)
         fetched = FeedCache.Feed(feed)
         logger.info("Got feed from feedparser {}".format(url))
         logger.debug("Feed: {}".format(feed))
