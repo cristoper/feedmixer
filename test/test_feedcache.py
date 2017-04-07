@@ -156,7 +156,7 @@ class TestGet(unittest.TestCase):
         None."""
         mock_os_path_exists.return_value = False
         mock_shelf = MagicMock(spec=RWShelf)
-        fc = FeedCache(db_path='dummy', shelf_t=mock_shelf).get('fake_url')
+        fc = FeedCache(db_path='dummy', shelf_t=mock_shelf)._FeedCache__get('fake_url')
         mock_shelf.assert_not_called()
         self.assertEqual(fc, None)
 
@@ -165,7 +165,7 @@ class TestGet(unittest.TestCase):
         """Test that FeedCache returns existing feed from shelf."""
         mock_os_path_exists.return_value = True
         mock_shelf = mock_locked_shelf(return_value="fake result")
-        fc = FeedCache(db_path='dummy', shelf_t=mock_shelf).get('fake_url')
+        fc = FeedCache(db_path='dummy', shelf_t=mock_shelf)._FeedCache__get('fake_url')
 
         mock_shelf.assert_called_with('dummy', 'r')
         mock_shelf.return_value.__enter__.return_value.get.assert_called_with('fake_url')
@@ -177,7 +177,7 @@ class TestGet(unittest.TestCase):
         shelf."""
         mock_os_path_exists.return_value = True
         mock_shelf = mock_locked_shelf()
-        fc = FeedCache(db_path='dummy', shelf_t=mock_shelf).get('fake_url')
+        fc = FeedCache(db_path='dummy', shelf_t=mock_shelf)._FeedCache__get('fake_url')
 
         mock_shelf.assert_called_with('dummy', 'r')
         mock_shelf.return_value.__enter__.return_value.get.assert_called_with('fake_url')
@@ -188,6 +188,6 @@ class TestUpdate(unittest.TestCase):
     def test_setitem(self):
         mock_shelf = mock_locked_shelf()
         fc = FeedCache(db_path='dummy', shelf_t=mock_shelf)
-        fc.update('fake_url', 'fake_feed')
+        fc._FeedCache__update('fake_url', 'fake_feed')
         mock_shelf.assert_called_with('dummy', 'c')
         mock_shelf.return_value.__enter__.return_value.__setitem__.assert_called_with('fake_url', 'fake_feed')
