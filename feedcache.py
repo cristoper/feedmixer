@@ -12,16 +12,23 @@ from http.client import NOT_MODIFIED
 import re
 import logging
 from locked_shelf import MutexShelf, RWShelf
-from typing import Union, Type, Callable
+from typing import Union, Type, Callable, NamedTuple, Dict, Optional
+from collections import namedtuple
 
 locked_shelf_t = Union[Type[RWShelf], Type[MutexShelf]]
+Return = NamedTuple('Return',
+                    [('feed', Optional[feedparser.util.FeedParserDict]),
+                     ('errors', Optional[Dict[str, str]])])
 
 logger = logging.getLogger(__name__)
 
 
 class FeedCache:
-    """A wrapper for feedparser which handles caching using the standard shelve
-    library. Thread and multiprocess safe."""
+    """A wrapper for feedparser which handles caching using a locking wrapper
+    around the standard shelve library. Thread and multiprocess safe."""
+
+    # The type returned by the fetch() method
+    returntuple = namedtuple('Return', ['feed', 'errors'])
 
     class Feed:
         """A wrapper class around a parsed feed so we can add some metadata (like
@@ -61,7 +68,7 @@ class FeedCache:
             logger.info("Updated feed for url: {}".format(url))
             shelf[url] = feed
 
-    def fetch(self, url) -> feedparser.util.FeedParserDict:
+    def fetch(self, url) -> returntuple:
         """Fetch an RSS/Atom feed given a URL.
 
         If the feed is in the cache and it is still fresh (younger than
@@ -78,11 +85,16 @@ class FeedCache:
             url: the url of the feed to fetch
 
         Returns:
-            A feedparser feed dictionary.
+            A named 2-tuple:
+                'feed': The parsed feed
+                'errors': a dictionary whose keys are any URLs which produced
+                http or parse errors, and whose associated values are a
+                description of the error.
         """
         etag = None
         lastmod = None
         now = datetime.datetime.now()
+        error_dict = {}
 
         logger.info("Fetching feed for url: {}".format(url))
         cached = self.get(url)
@@ -91,7 +103,7 @@ class FeedCache:
             if now < cached.expire_dt:
                 # If cache is fresh, use it without further ado
                 logger.info("Fresh feed found in cache: {}".format(url))
-                return cached.feed
+                return self.returntuple(cached.feed, error_dict)
 
             logger.info("Stale feed found in cache: {}".format(url))
             etag = cached.feed.get('etag')
@@ -119,7 +131,7 @@ class FeedCache:
 
         # Add to/update cache with new expire_dt
         # Using max-age parsed from cache-control header, if it exists
-        cc_header = fetched.feed.headers.get('cache-control')
+        cc_header = fetched.feed.get('headers').get('cache-control') or ''
         ma_match = re.search('max-age=(\d+)', cc_header)
         if ma_match:
             min_age = min(int(ma_match.group(1)), self.min_age)
@@ -127,4 +139,4 @@ class FeedCache:
             min_age = self.min_age
         fetched.expire_dt = now + datetime.timedelta(seconds=min_age)
         self.update(url, fetched)
-        return fetched.feed
+        return self.returntuple(fetched.feed, error_dict)

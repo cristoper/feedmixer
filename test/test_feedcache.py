@@ -26,9 +26,9 @@ def mock_locked_shelf(return_value=None):
     return mock_shelf
 
 
-def test_feed(test_file='test/test_atom.xhtml', status=OK,
-              exp_time=datetime.datetime.now(), etag='etag',
-              modified='modified', max_age=None):
+def build_feed(test_file='test/test_atom.xhtml', status=OK,
+               exp_time=datetime.datetime.now(), etag='etag',
+               modified='modified', max_age=None):
     """Read an Atom/RSS feed from file and return a FeedCache.Feed object
     suitable for testing.
 
@@ -55,7 +55,7 @@ def test_feed(test_file='test/test_atom.xhtml', status=OK,
     return FeedCache.Feed(test_parsed, exp_time)
 
 
-def test_parser(return_value):
+def build_parser(return_value):
     """Build a mock feedparser.parse method.
 
     Args:
@@ -83,17 +83,17 @@ class TestFetch(unittest.TestCase):
 
         # setup mock locked_shelf:
         fresh_time = datetime.datetime.now() + datetime.timedelta(days=1)
-        fresh_feed = test_feed(exp_time=fresh_time)
+        fresh_feed = build_feed(exp_time=fresh_time)
         mock_shelf = mock_locked_shelf(fresh_feed)
 
         # setup mock feedparser.parse method
-        mock_parser = test_parser(fresh_feed.feed)
+        mock_parser = build_parser(fresh_feed.feed)
 
         # DUT:
         fc = FeedCache(db_path='dummy', shelf_t=mock_shelf,
                        parse=mock_parser).fetch('fake_url')
 
-        self.assertEqual(fc, fresh_feed.feed)
+        self.assertEqual(fc.feed, fresh_feed.feed)
         # since feed is resh, assert that the parser is not called:
         mock_parser.assert_not_called()
 
@@ -106,18 +106,18 @@ class TestFetch(unittest.TestCase):
 
         # setup mocked RWShelf
         stale_time = datetime.datetime.now() - datetime.timedelta(days=500)
-        stale_feed = test_feed(exp_time=stale_time, status=NOT_MODIFIED)
+        stale_feed = build_feed(exp_time=stale_time, status=NOT_MODIFIED)
         mock_shelf = mock_locked_shelf(stale_feed)
 
         # setup mock feedparser.parse method
-        mock_parser = test_parser(stale_feed.feed)
+        mock_parser = build_parser(stale_feed.feed)
 
         # instantiate DUT:
         fc = FeedCache(db_path='dummy', shelf_t=mock_shelf,
                        parse=mock_parser).fetch('fake_url')
 
         mock_parser.assert_called_once_with('fake_url', 'etag', 'modified')
-        self.assertEqual(fc, stale_feed.feed)
+        self.assertEqual(fc.feed, stale_feed.feed)
 
     @patch('os.path.exists')
     def test_stale_modified(self, mock_os_path_exists):
@@ -128,7 +128,7 @@ class TestFetch(unittest.TestCase):
 
         # setup mocked RWShelf
         stale_time = datetime.datetime.now() - datetime.timedelta(days=500)
-        stale_feed = test_feed(exp_time=stale_time, status=OK)
+        stale_feed = build_feed(exp_time=stale_time, status=OK)
         mock_shelf = mock_locked_shelf(stale_feed)
 
         # setup mock feedparser.parse method  (and mock headers so we can verify
@@ -138,7 +138,7 @@ class TestFetch(unittest.TestCase):
         new_feed = stale_feed.feed
         new_feed['headers'] = mock_headers
         new_feed.entries[0].title = "This title was changed on the server"
-        mock_parser = test_parser(new_feed)
+        mock_parser = build_parser(new_feed)
 
         # instantiate DUT:
         fc = FeedCache(db_path='dummy', shelf_t=mock_shelf,
@@ -146,7 +146,7 @@ class TestFetch(unittest.TestCase):
 
         mock_parser.assert_called_once_with('fake_url', 'etag', 'modified')
         mock_headers.get.assert_called_with('cache-control')
-        self.assertEqual(fc, new_feed)
+        self.assertEqual(fc.feed, new_feed)
 
 
 class TestGet(unittest.TestCase):
