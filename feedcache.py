@@ -6,20 +6,15 @@ feedparser on github: https://github.com/kurtmckee/feedparser
 """
 
 import feedparser
-from urllib.error import URLError
 import os.path
 import datetime
 from http.client import NOT_MODIFIED
 import re
 import logging
 from locked_shelf import MutexShelf, RWShelf
-from typing import Union, Type, Callable, NamedTuple, Optional
-from collections import namedtuple
+from typing import Union, Type, Callable, Optional
 
 locked_shelf_t = Union[Type[RWShelf], Type[MutexShelf]]
-Return = NamedTuple('Return',
-                    [('feed', Optional[feedparser.util.FeedParserDict]),
-                     ('error', Optional[str])])
 
 logger = logging.getLogger(__name__)
 
@@ -27,9 +22,6 @@ logger = logging.getLogger(__name__)
 class FeedCache:
     """A wrapper for feedparser which handles caching using a locking wrapper
     around the standard shelve library. Thread and multiprocess safe."""
-
-    # The type returned by the fetch() method
-    returntuple = namedtuple('Return', ['feed', 'error'])
 
     class Feed:
         """A wrapper class around a parsed feed so we can add some metadata (like
@@ -39,9 +31,17 @@ class FeedCache:
             self.feed = feed
             self.expire_dt = expire_dt
 
+    class ParseError(Exception):
+        pass
+
+    class FetchError(Exception):
+        def __init__(self, message: str, statuscode: Optional[int] =None):
+            super().__init__(message)
+            self.status = statuscode
+
     def __init__(self, db_path: str, min_age: int = 1200,
                  shelf_t: locked_shelf_t=RWShelf,
-                 parse: Callable =feedparser.parse) -> None:
+                 parse: Callable=feedparser.parse) -> None:
         """
         Args:
             db_path: Path to the dbm file which holds the cache
@@ -69,7 +69,7 @@ class FeedCache:
             logger.info("Updated feed for url: {}".format(url))
             shelf[url] = feed
 
-    def fetch(self, url) -> returntuple:
+    def fetch(self, url) -> feedparser.util.FeedParserDict:
         """Fetch an RSS/Atom feed given a URL.
 
         If the feed is in the cache and it is still fresh (younger than
@@ -86,14 +86,18 @@ class FeedCache:
             url: the url of the feed to fetch
 
         Returns:
-            A named 2-tuple:
-                'feed': The parsed feed
-                'error': a description of the error.
+            The parsed feed (or throws an exception if the feed couldn't be
+            fetched/parsed)
+
+        Throws:
+            URLError: This is propagated from feedparser/urllib if the domain
+            name cannot be resolved
+            FetchError:
+            ParseError:
         """
         etag = None
         lastmod = None
         now = datetime.datetime.now()
-        error = None
 
         logger.info("Fetching feed for url: {}".format(url))
         cached = self.__get(url)
@@ -102,7 +106,7 @@ class FeedCache:
             if now < cached.expire_dt:
                 # If cache is fresh, use it without further ado
                 logger.info("Fresh feed found in cache: {}".format(url))
-                return self.returntuple(cached.feed, None)
+                return cached.feed
 
             logger.info("Stale feed found in cache: {}".format(url))
             etag = cached.feed.get('etag')
@@ -117,41 +121,33 @@ class FeedCache:
         logger.info("Fetching from remote {}".format(url))
         feed = self.parse(url, etag=etag, modified=lastmod)
 
-        try:
-            fetched = FeedCache.Feed(feed)
-        except URLError as e:
-            error = "URL fetch error ({})".format(e.reason)
-        except Exception as e:
-            error = ("An exception occurred while fetching the feed from the"
-                     "remote server: ({})").format(e)
-        else:
-            # non-exception error handling
-            if feed is None or feed.get('status') is None:
-                error = "Network error"
-            elif feed.status < 399 and len(feed.entries) == 0 and feed.bozo:
-                error = "Parse error ({})".format(feed.bozo_exception)
-            elif feed.status > 399:
-                # HTTP error
-                error = "HTTP error ({})".format(feed.status)
+        fetched = FeedCache.Feed(feed)
 
-        if error:
-            logger.info("An error occurred for {} ({})".format(url, error))
-        else:
-            logger.info("Got feed from feedparser {}".format(url))
-            logger.debug("Feed: {}".format(feed))
-            if feed.status == NOT_MODIFIED:
-                # Source says feed is still fresh
-                logger.info("Server says feed is still fresh: {}".format(url))
-                fetched.feed = cached.feed
+        if feed is None or feed.get('status') is None:
+            logger.info("Failed to fetch feed (})".format(url))
+            raise self.FetchError("Failed to fetch feed")
+        elif feed.status > 399:
+            logger.info("HTTP error {} ({})".format(feed.status, url))
+            raise self.FetchError("HTTP error", feed.status)
+        elif feed.status < 399 and len(feed.entries) == 0 and feed.bozo:
+            logger.info("Parse error ({})".format(feed.bozo_exception))
+            raise self.ParseError("Parse error: {}".format(feed.bozo_exception))
 
-            # Add to/update cache with new expire_dt
-            # Using max-age parsed from cache-control header, if it exists
-            cc_header = fetched.feed.get('headers').get('cache-control') or ''
-            ma_match = re.search('max-age=(\d+)', cc_header)
-            if ma_match:
-                min_age = min(int(ma_match.group(1)), self.min_age)
-            else:
-                min_age = self.min_age
-                fetched.expire_dt = now + datetime.timedelta(seconds=min_age)
-                self.__update(url, fetched)
-        return self.returntuple(fetched.feed, error)
+        logger.info("Got feed from feedparser {}".format(url))
+        logger.debug("Feed: {}".format(feed))
+        if feed.status == NOT_MODIFIED:
+            # Source says feed is still fresh
+            logger.info("Server says feed is still fresh: {}".format(url))
+            fetched.feed = cached.feed
+
+        # Add to/update cache with new expire_dt
+        # Using max-age parsed from cache-control header, if it exists
+        cc_header = fetched.feed.get('headers').get('cache-control') or ''
+        ma_match = re.search('max-age=(\d+)', cc_header)
+        if ma_match:
+            min_age = min(int(ma_match.group(1)), self.min_age)
+        else:
+            min_age = self.min_age
+            fetched.expire_dt = now + datetime.timedelta(seconds=min_age)
+            self.__update(url, fetched)
+        return fetched.feed
