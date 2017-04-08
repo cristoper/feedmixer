@@ -126,16 +126,17 @@ class FeedCache:
         if feed is None or feed.get('status') is None:
             logger.info("Failed to fetch feed (})".format(url))
             raise self.FetchError("Failed to fetch feed")
-        elif feed.status > 399:
-            logger.info("HTTP error {} ({})".format(feed.status, url))
-            raise self.FetchError("HTTP error", feed.status)
-        elif feed.status < 399 and len(feed.entries) == 0 and feed.bozo:
-            logger.info("Parse error ({})".format(feed.bozo_exception))
-            raise self.ParseError("Parse error: {}".format(feed.bozo_exception))
+        elif feed.get('status') > 399:
+            logger.info("HTTP error {} ({})".format(feed.get('status'), url))
+            raise self.FetchError("HTTP error", feed.get('status'))
+        elif (feed.get('status') < 399 and len(feed.get('entries')) == 0 and
+              feed.get('bozo')):
+            logger.info("Parse error ({})".format(feed.get('bozo_exception')))
+            raise self.ParseError("Parse error: {}".format(feed.get('bozo_exception')))
 
         logger.info("Got feed from feedparser {}".format(url))
         logger.debug("Feed: {}".format(feed))
-        if feed.status == NOT_MODIFIED:
+        if feed.get('status') == NOT_MODIFIED:
             # Source says feed is still fresh
             logger.info("Server says feed is still fresh: {}".format(url))
             fetched.feed = cached.feed
