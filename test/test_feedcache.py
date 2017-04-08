@@ -4,6 +4,7 @@ from unittest.mock import patch, MagicMock
 from locked_shelf import RWShelf
 import feedparser
 import datetime
+from urllib.error import URLError
 
 ATOM_PATH = 'test/test_atom.xhtml'
 NOT_MODIFIED = 301
@@ -47,9 +48,12 @@ def build_feed(test_file='test/test_atom.xhtml', status=OK,
     with open(test_file, 'r') as f:
         feed = ''.join(f.readlines())
         test_parsed = feedparser.parse(feed)
+    test_parsed.etag = etag
     test_parsed['etag'] = etag
+    test_parsed.modified = modified
     test_parsed['modified'] = modified
     test_parsed.status = status
+    test_parsed['status'] = status
     if max_age:
         test_parsed['headers'] = {'cache-control': 'max-age={}'.format(max_age)}
     return FeedCache.Feed(test_parsed, exp_time)
@@ -75,6 +79,27 @@ class TestFetch(unittest.TestCase):
         pass
 
     @patch('os.path.exists')
+    def test_new(self, mock_os_path_exists):
+        """Simulate a URL not in the cache, and verify that FeedCache tries to
+        fetch it over http."""
+        # so we don't need an actual db file:
+        mock_os_path_exists.return_value = True
+
+        # setup mock locked_shelf:
+        fresh_feed = build_feed()
+        mock_shelf = mock_locked_shelf(None)
+
+        # setup mock feedparser.parse method
+        mock_parser = build_parser(fresh_feed.feed)
+
+        # DUT:
+        fc = FeedCache(db_path='dummy', shelf_t=mock_shelf,
+                       parse=mock_parser).fetch('fake_url')
+
+        self.assertEqual(fc, fresh_feed.feed)
+        mock_parser.assert_called_once_with('fake_url', None, None)
+
+    @patch('os.path.exists')
     def test_fresh(self, mock_os_path_exists):
         """Simulate a freshly cached feed and verify that FeedCache returns
         it."""
@@ -93,7 +118,7 @@ class TestFetch(unittest.TestCase):
         fc = FeedCache(db_path='dummy', shelf_t=mock_shelf,
                        parse=mock_parser).fetch('fake_url')
 
-        self.assertEqual(fc.feed, fresh_feed.feed)
+        self.assertEqual(fc, fresh_feed.feed)
         # since feed is resh, assert that the parser is not called:
         mock_parser.assert_not_called()
 
@@ -117,7 +142,7 @@ class TestFetch(unittest.TestCase):
                        parse=mock_parser).fetch('fake_url')
 
         mock_parser.assert_called_once_with('fake_url', 'etag', 'modified')
-        self.assertEqual(fc.feed, stale_feed.feed)
+        self.assertEqual(fc, stale_feed.feed)
 
     @patch('os.path.exists')
     def test_stale_modified(self, mock_os_path_exists):
@@ -146,4 +171,79 @@ class TestFetch(unittest.TestCase):
 
         mock_parser.assert_called_once_with('fake_url', 'etag', 'modified')
         mock_headers.get.assert_called_with('cache-control')
-        self.assertEqual(fc.feed, new_feed)
+        self.assertEqual(fc, new_feed)
+
+    @patch('os.path.exists')
+    def test_404(self, mock_os_path_exists):
+        """Simulate fetching a non-existent feed."""
+        # so we don't need an actual db file:
+        mock_os_path_exists.return_value = True
+
+        # setup mocked RWShelf
+        feed404 = build_feed(status=404)
+        mock_shelf = mock_locked_shelf(None)
+
+        # setup mock feedparser.parse method
+        mock_parser = build_parser(feed404.feed)
+
+        # instantiate DUT:
+        fc = FeedCache(db_path='dummy', shelf_t=mock_shelf,
+                       parse=mock_parser)
+
+        with self.assertRaises(FeedCache.FetchError) as e:
+            fc.fetch('http://notfound/')
+        self.assertEqual(404, e.exception.status)
+        mock_parser.assert_called_once_with('http://notfound/', None, None)
+
+    @patch('os.path.exists')
+    def test_parse_error(self, mock_os_path_exists):
+        """Simulate a fatal parse error."""
+        # so we don't need an actual db file:
+        mock_os_path_exists.return_value = True
+
+        # setup mocked RWShelf
+        error_feed = {}
+        error_feed['bozo'] = 1
+        error_feed['bozo_exception'] = ("xml.sax._exceptions.SAXParseException"
+                                        "('syntax error')")
+        error_feed['entries'] = []
+        error_feed['feed'] = {}
+        error_feed['status'] = 301
+
+        mock_shelf = mock_locked_shelf(None)
+
+        # setup mock feedparser.parse method
+        mock_parser = build_parser(error_feed)
+
+        # instantiate DUT:
+        fc = FeedCache(db_path='dummy', shelf_t=mock_shelf,
+                       parse=mock_parser)
+
+        with self.assertRaises(FeedCache.ParseError) as e:
+            fc.fetch('http://doamin/notafeed')
+            self.assertEqual(404, e.exception['status'])
+        mock_parser.assert_called_once_with('http://doamin/notafeed', None,
+                                            None)
+
+    @patch('os.path.exists')
+    def test_DNS_error(self, mock_os_path_exists):
+        """Give fetch() a non-existing domain name and check that it handles the
+        error correctly."""
+        # so we don't need an actual db file:
+        mock_os_path_exists.return_value = True
+
+        # setup mocked RWShelf
+        mock_shelf = mock_locked_shelf(None)
+
+        # setup mock feedparser.parse method
+        mock_parser = build_parser(None)
+        mock_parser.side_effect = URLError('Name or service not known')
+
+        # instantiate DUT:
+        fc = FeedCache(db_path='dummy', shelf_t=mock_shelf,
+                       parse=mock_parser)
+
+        with self.assertRaises(URLError):
+            fc.fetch('http://notfound/')
+
+        mock_parser.assert_called_once_with('http://notfound/', None, None)
