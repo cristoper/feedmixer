@@ -92,8 +92,10 @@ class FeedCache:
         Throws:
             URLError: This is propagated from feedparser/urllib if the domain
             name cannot be resolved
-            FetchError:
-            ParseError:
+            FetchError: If there was an HTTP error (the http status code is
+            returned in the exception object's `status` attribute)
+            ParseError: If feedparser successfully fetched a resource over http,
+            but wasn't able to parse it as a feed.
         """
         etag = None
         lastmod = None
