@@ -22,7 +22,7 @@ from typing import List, Optional, Callable
 # https://docs.djangoproject.com/en/1.10/_modules/django/utils/feedgenerator/
 import feedgenerator
 from feedgenerator import Rss201rev2Feed, Atom1Feed, SyndicationFeed
-import feedparser
+from feedparser.util import FeedParserDict
 
 from feedcache import FeedCache
 
@@ -33,7 +33,7 @@ class FeedMixer(object):
     def __init__(self, title: str='Title', link: str='', desc: str='', feeds:
                  List[Optional[str]]=[], num_keep: int=3, max_threads: int=5,
                  max_feeds: int=100, cache_path: str='fmcache.db', cacher:
-                 Optional[Callable]=None) -> None:
+                 Optional[Callable[[str], FeedParserDict]]=None) -> None:
         """
         Args:
             title: the title of the generated feed
@@ -143,8 +143,7 @@ class FeedMixer(object):
         self._mixed_entries = mixed_entries
 
     @staticmethod
-    def extract_meta(parsed_entries:
-                     List[feedparser.util.FeedParserDict]) -> List[dict]:
+    def extract_meta(parsed_entries: List[FeedParserDict]) -> List[dict]:
         """
         Convert a FeedParserDict object into a dict compatible with the Django
         feedgenerator classes.
