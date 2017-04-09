@@ -47,7 +47,8 @@ class FeedMixer(object):
         self.title = title
         self.link = link
         self.desc = desc
-        self.feeds = feeds[:max_feeds]
+        self.max_feeds = max_feeds
+        self._feeds = feeds[:max_feeds]
         self.num_keep = num_keep
         self.cache_path = cache_path
         self.max_threads = max_threads
@@ -58,6 +59,18 @@ class FeedMixer(object):
         if len(self._mixed_entries) < 1:
             self.__fetch_entries()
         return self._mixed_entries
+
+    @property
+    def feeds(self):
+        return self._feeds
+
+    @feeds.setter
+    def feeds(self, value: List[str]):
+        """
+        Reset _mixed_entries whenever we get a new list of feeds.
+        """
+        self._feeds = value[:self.max_feeds]
+        self._mixed_entries = []
 
     def atom_feed(self):
         """
