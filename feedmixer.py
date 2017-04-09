@@ -22,6 +22,7 @@ from typing import List, Optional
 # https://docs.djangoproject.com/en/1.10/_modules/django/utils/feedgenerator/
 import feedgenerator
 from feedgenerator import Rss201rev2Feed, Atom1Feed, SyndicationFeed
+import feedparser
 
 from feedcache import FeedCache
 
@@ -94,16 +95,18 @@ class FeedMixer(object):
             A JSON dict consisting of the `num_keep` most recent entries from
             each of the `feeds`.
         """
+        # (The default encoding lambda is so that we can handle datetime
+        # objects)
         return json.dumps(self.mixed_entries, default=lambda o: str(o))
 
     def __fetch_entries(self):
         """
         Multi-threaded fetching of the `feeds`. Keeps the `num_keep` most recent
-        entry of each feed, then combines them (sorted chronologically),
+        entries from each feed, then combines them (sorted chronologically),
         extracts `feedgernerator`-compatible metadata, and then stores the list
         of entries as `self.mixed_entries`
         """
-        mixed_entries, parsed_entries = [], []
+        parsed_entries = []
         cache = FeedCache(self.cache_path)
         with ThreadPoolExecutor(max_workers=self.max_threads) as exec:
             future_to_url = {exec.submit(cache.fetch, url): url for url in
@@ -131,6 +134,17 @@ class FeedMixer(object):
         parsed_entries.sort(key=lambda e: e.published, reverse=True)
 
         # extract metadata into a form usable by feedgenerator
+        mixed_entries = self.extract_meta(parsed_entries)
+        self._mixed_entries = mixed_entries
+
+    @staticmethod
+    def extract_meta(parsed_entries:
+                     List[feedparser.util.FeedParserDict]) -> List[dict]:
+        """
+        Convert a FeedParserDict object into a dict compatible with the Django
+        feedgenerator classes.
+        """
+        mixed_entries = []
         for e in parsed_entries:
             metadata = {}
 
@@ -172,7 +186,7 @@ class FeedMixer(object):
                 metadata['enclosures'] = enclist
 
             mixed_entries.append(metadata)
-        self._mixed_entries = mixed_entries
+        return mixed_entries
 
     def __generate_feed(self, gen_cls: SyndicationFeed):
         """
