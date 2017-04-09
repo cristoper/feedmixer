@@ -17,7 +17,7 @@ import logging
 import concurrent.futures
 from concurrent.futures import ThreadPoolExecutor
 import json
-from typing import List, Optional
+from typing import List, Optional, Callable
 
 # https://docs.djangoproject.com/en/1.10/_modules/django/utils/feedgenerator/
 import feedgenerator
@@ -32,7 +32,8 @@ logger = logging.getLogger(__name__)
 class FeedMixer(object):
     def __init__(self, title: str='Title', link: str='', desc: str='', feeds:
                  List[Optional[str]]=[], num_keep: int=3, max_threads: int=5,
-                 max_feeds: int=100, cache_path: str='fmcache.db') -> None:
+                 max_feeds: int=100, cache_path: str='fmcache.db', cacher:
+                 Optional[Callable]=None) -> None:
         """
         Args:
             title: the title of the generated feed
@@ -44,6 +45,8 @@ class FeedMixer(object):
             feeds
             max_feeds: the maximum number of feeds to fetch
             cache_path: path where the cache database should be created
+            cacher: the method to use for caching/fetching feeds (this is
+            injectable for testing purposes)
         """
         self.title = title
         self.link = link
@@ -51,9 +54,12 @@ class FeedMixer(object):
         self.max_feeds = max_feeds
         self._feeds = feeds[:max_feeds]
         self.num_keep = num_keep
-        self.cache_path = cache_path
         self.max_threads = max_threads
         self._mixed_entries = []  # type: List[Optional[dict]]
+        if cacher is None:
+            self.cacher = FeedCache(cache_path).fetch
+        else:
+            self.cacher = cacher
 
     @property
     def mixed_entries(self):
@@ -107,9 +113,8 @@ class FeedMixer(object):
         of entries as `self.mixed_entries`
         """
         parsed_entries = []
-        cache = FeedCache(self.cache_path)
         with ThreadPoolExecutor(max_workers=self.max_threads) as exec:
-            future_to_url = {exec.submit(cache.fetch, url): url for url in
+            future_to_url = {exec.submit(self.cacher, url): url for url in
                              self.feeds}
             for future in concurrent.futures.as_completed(future_to_url):
                 url = future_to_url[future]
