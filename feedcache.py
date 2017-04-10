@@ -126,7 +126,7 @@ class FeedCache:
         fetched = FeedCache.Feed(feed)
 
         if feed is None or feed.get('status') is None:
-            logger.info("Failed to fetch feed (})".format(url))
+            logger.info("Failed to fetch feed ({})".format(url))
             raise self.FetchError("Failed to fetch feed")
         elif feed.get('status') > 399:
             logger.info("HTTP error {} ({})".format(feed.get('status'), url))
