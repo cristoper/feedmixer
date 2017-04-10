@@ -1,6 +1,6 @@
 from feedcache import FeedCache
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch, MagicMock, ANY
 from locked_shelf import RWShelf
 import feedparser
 import datetime
@@ -180,7 +180,7 @@ class TestFetch(unittest.TestCase):
         # setup mock feedparser.parse method  (and mock headers so we can verify
         # that FeedCache parsed the cache-control header)
         mock_headers = MagicMock(spec=dict)
-        mock_headers.get.return_value = None
+        mock_headers.get.return_value = 'max-age=10'
         new_feed = stale_feed.feed
         new_feed['headers'] = mock_headers
         new_feed.entries[0].title = "This title was changed on the server"
@@ -192,6 +192,12 @@ class TestFetch(unittest.TestCase):
 
         mock_parser.assert_called_once_with('fake_url', 'etag', 'modified')
         mock_headers.get.assert_called_with('cache-control')
+
+        # Make sure feed was updated:
+        mock_set = mock_shelf.return_value.__enter__.return_value.__setitem__
+        mock_shelf.assert_any_call('dummy', 'c')
+        mock_set.assert_called_with('fake_url', ANY)
+
         self.assertEqual(fc, new_feed)
 
     @patch('os.path.exists')
