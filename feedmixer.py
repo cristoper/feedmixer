@@ -76,7 +76,12 @@ class FeedMixer(object):
             self.cacher = cacher
 
     @property
-    def mixed_entries(self):
+    def mixed_entries(self) -> List[dict]:
+        """
+        The parsed feed entries fetched from the list of URLs in `feeds`.
+        (Accessing the property triggers the feeds to be fetched/cached if they
+        have not yet been.)
+        """
         if len(self._mixed_entries) < 1:
             self.__fetch_entries()
         return self._mixed_entries
@@ -102,7 +107,7 @@ class FeedMixer(object):
         self._feeds = value[:self.max_feeds]
         self._mixed_entries = []
 
-    def atom_feed(self):
+    def atom_feed(self) -> str:
         """
         Returns:
             An Atom feed consisting of the `num_keep` most recent entries from
@@ -110,7 +115,7 @@ class FeedMixer(object):
         """
         return self.__generate_feed(Atom1Feed).writeString('utf-8')
 
-    def rss_feed(self):
+    def rss_feed(self) -> str:
         """
         Returns:
             An RSS 2 feed consisting of the `num_keep` most recent entries from
@@ -118,7 +123,7 @@ class FeedMixer(object):
         """
         return self.__generate_feed(Rss201rev2Feed).writeString('utf-8')
 
-    def json_feed(self):
+    def json_feed(self) -> str:
         """
         Returns:
             A JSON dict consisting of the `num_keep` most recent entries from
@@ -128,7 +133,7 @@ class FeedMixer(object):
         # objects)
         return json.dumps(self.mixed_entries, default=lambda o: str(o))
 
-    def __fetch_entries(self):
+    def __fetch_entries(self) -> None:
         """
         Multi-threaded fetching of the `feeds`. Keeps the `num_keep` most recent
         entries from each feed, combines them (sorted chronologically), extracts
@@ -217,7 +222,7 @@ class FeedMixer(object):
             mixed_entries.append(metadata)
         return mixed_entries
 
-    def __generate_feed(self, gen_cls: SyndicationFeed):
+    def __generate_feed(self, gen_cls: SyndicationFeed) -> str:
         """
         Generate a feed using one of the generator classes from the Django
         `feedgenerator` module.
