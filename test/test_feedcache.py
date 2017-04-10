@@ -5,10 +5,9 @@ from locked_shelf import RWShelf
 import feedparser
 import datetime
 from urllib.error import URLError
+from http.client import NOT_MODIFIED, OK
 
 ATOM_PATH = 'test/test_atom.xhtml'
-NOT_MODIFIED = 301
-OK = 200
 
 
 def mock_locked_shelf(return_value=None):
