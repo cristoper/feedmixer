@@ -108,9 +108,9 @@ class FeedMixer(object):
     def __fetch_entries(self):
         """
         Multi-threaded fetching of the `feeds`. Keeps the `num_keep` most recent
-        entries from each feed, then combines them (sorted chronologically),
-        extracts `feedgernerator`-compatible metadata, and then stores the list
-        of entries as `self.mixed_entries`
+        entries from each feed, combines them (sorted chronologically), extracts
+        `feedgernerator`-compatible metadata, and then stores the list of
+        entries as `self.mixed_entries`
         """
         parsed_entries = []
         with ThreadPoolExecutor(max_workers=self.max_threads) as exec:
