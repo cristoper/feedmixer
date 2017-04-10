@@ -151,6 +151,6 @@ class FeedCache:
             min_age = min(int(ma_match.group(1)), self.min_age)
         else:
             min_age = self.min_age
-            fetched.expire_dt = now + datetime.timedelta(seconds=min_age)
-            self.__update(url, fetched)
+        fetched.expire_dt = now + datetime.timedelta(seconds=min_age)
+        self.__update(url, fetched)
         return fetched.feed
