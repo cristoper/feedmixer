@@ -218,6 +218,30 @@ class TestFetch(unittest.TestCase):
         mock_parser.assert_called_once_with('http://notfound/', None, None)
 
     @patch('os.path.exists')
+    def test_fetch_error(self, mock_os_path_exists):
+        """
+        Test case if feedparser returns an object with no `status` attribute (we
+        assume some sort of network error occurred).
+        """
+        # so we don't need an actual db file:
+        mock_os_path_exists.return_value = True
+
+        # setup mocked RWShelf
+        feed_err = build_feed(status=None)
+        mock_shelf = mock_locked_shelf(None)
+
+        # setup mock feedparser.parse method
+        mock_parser = build_parser(feed_err.feed)
+
+        # instantiate DUT:
+        fc = FeedCache(db_path='dummy', shelf_t=mock_shelf,
+                       parse=mock_parser)
+
+        with self.assertRaises(FeedCache.FetchError):
+            fc.fetch('http://domain/error')
+        mock_parser.assert_called_once_with('http://domain/error', None, None)
+
+    @patch('os.path.exists')
     def test_parse_error(self, mock_os_path_exists):
         """Simulate a fatal parse error."""
         # so we don't need an actual db file:
