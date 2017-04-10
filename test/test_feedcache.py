@@ -27,7 +27,7 @@ def mock_locked_shelf(return_value=None):
     return mock_shelf
 
 
-def build_feed(test_file='test/test_atom.xhtml', status=OK,
+def build_feed(test_file=ATOM_PATH, status=OK,
                exp_time=datetime.datetime.now(), etag='etag',
                modified='modified', max_age=None):
     """Read an Atom/RSS feed from file and return a FeedCache.Feed object
@@ -79,6 +79,28 @@ class TestFetch(unittest.TestCase):
         pass
 
     @patch('os.path.exists')
+    def test_db_not_exists(self, mock_os_path_exists):
+        """
+        Test that the cache returns None if the database does not exist.
+        """
+        # Report the database file as non-existent:
+        mock_os_path_exists.return_value = False
+
+        # setup mock locked_shelf:
+        new_feed = build_feed()
+        mock_shelf = mock_locked_shelf(None)
+
+        # setup mock feedparser.parse method
+        mock_parser = build_parser(new_feed.feed)
+
+        # DUT:
+        fc = FeedCache(db_path='dummy', shelf_t=mock_shelf,
+                       parse=mock_parser).fetch('fake_url')
+
+        self.assertEqual(fc, new_feed.feed)
+        mock_parser.assert_called_once_with('fake_url', None, None)
+
+    @patch('os.path.exists')
     def test_new(self, mock_os_path_exists):
         """Simulate a URL not in the cache, and verify that FeedCache tries to
         fetch it over http."""
@@ -86,17 +108,17 @@ class TestFetch(unittest.TestCase):
         mock_os_path_exists.return_value = True
 
         # setup mock locked_shelf:
-        fresh_feed = build_feed()
+        new_feed = build_feed()
         mock_shelf = mock_locked_shelf(None)
 
         # setup mock feedparser.parse method
-        mock_parser = build_parser(fresh_feed.feed)
+        mock_parser = build_parser(new_feed.feed)
 
         # DUT:
         fc = FeedCache(db_path='dummy', shelf_t=mock_shelf,
                        parse=mock_parser).fetch('fake_url')
 
-        self.assertEqual(fc, fresh_feed.feed)
+        self.assertEqual(fc, new_feed.feed)
         mock_parser.assert_called_once_with('fake_url', None, None)
 
     @patch('os.path.exists')
