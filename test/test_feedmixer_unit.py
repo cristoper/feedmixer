@@ -4,6 +4,7 @@ from feedcache import FeedCache
 from urllib.error import URLError
 import feedparser
 from feedmixer import FeedMixer
+from copy import deepcopy
 
 ATOM_PATH = 'test/test_atom.xhtml'
 RSS_PATH = 'test/test_rss2.xhtml'
@@ -120,7 +121,7 @@ class TestMixedEntries(unittest.TestCase):
         """
         # Ensure that any future changes to the test file at ATOM_PATH don't
         # include <author> for each entry (which would render this test useless)
-        feed = TEST_ATOM
+        feed = deepcopy(TEST_ATOM)
         first = feed['entries'][0]
         if hasattr(first, 'author_detail'):
             del first['author_detail']
@@ -151,13 +152,26 @@ class TestAtomFeed(unittest.TestCase):
 
 
 class TestRSSFeed(unittest.TestCase):
-    def test_atom_feed(self):
+    def test_rss_feed(self):
         """
         Test serialization as RSS.
         """
         expected = '''<?xml version="1.0" encoding="utf-8"?>\n<rss version="2.0"><channel><title>Title</title><link></link><description></description><lastBuildDate>Wed, 05 Apr 2017 18:48:43 -0000</lastBuildDate><item><title>Uber finds one allegedly stolen Waymo file on an employee’s personal device</title><link>https://techcrunch.com/2017/04/05/uber-finds-one-allegedly-stolen-waymo-file-on-an-employees-personal-device/</link><description>&lt;p&gt;Article URL: &lt;a href="https://techcrunch.com/2017/04/05/uber-finds-one-allegedly-stolen-waymo-file-on-an-employees-personal-device/"&gt;https://techcrunch.com/2017/04/05/uber-finds-one-allegedly-stolen-waymo-file-on-an-employees-personal-device/&lt;/a&gt;&lt;/p&gt;&lt;p&gt;Comments URL: &lt;a href="https://news.ycombinator.com/item?id=14044517"&gt;https://news.ycombinator.com/item?id=14044517&lt;/a&gt;&lt;/p&gt;&lt;p&gt;Points: 336&lt;/p&gt;&lt;p&gt;# Comments: 206&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">folz</dc:creator><pubDate>Wed, 05 Apr 2017 18:48:43 -0000</pubDate><comments>https://news.ycombinator.com/item?id=14044517</comments><guid isPermaLink="false">https://news.ycombinator.com/item?id=14044517</guid></item><item><title>A Look At Bernie Sanders\' Electoral Socialism</title><link>http://americancynic.net/log/2016/2/27/a_look_at_bernie_sanders_electoral_socialism/</link><description>On the difference between democratic socialism and social democracy, the future of capitalism, and the socialist response to the Bernie Sanders presidential campaign.</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">A. Cynic</dc:creator><pubDate>Sat, 27 Feb 2016 22:33:51 -0000</pubDate><guid isPermaLink="false">tag:americancynic.net,2016-02-27:/log/2016/2/27/a_look_at_bernie_sanders_electoral_socialism/</guid></item></channel></rss>'''
         mc = build_mock_cacher()
         fm = FeedMixer(feeds=['atom', 'rss'], cacher=mc, num_keep=1)
-        af = fm.rss_feed()
+        rf = fm.rss_feed()
         self.maxDiff = None
-        self.assertIn(expected, af)
+        self.assertIn(expected, rf)
+
+
+class TestJSONFeed(unittest.TestCase):
+    def test_json_feed(self):
+        """
+        Test serialization as JSON.
+        """
+        expected = '''[{"author_email": null, "author_link": null, "author_name": "folz", "comments": "https://news.ycombinator.com/item?id=14044517", "description": "<p>Article URL: <a href=\\"https://techcrunch.com/2017/04/05/uber-finds-one-allegedly-stolen-waymo-file-on-an-employees-personal-device/\\">https://techcrunch.com/2017/04/05/uber-finds-one-allegedly-stolen-waymo-file-on-an-employees-personal-device/</a></p><p>Comments URL: <a href=\\"https://news.ycombinator.com/item?id=14044517\\">https://news.ycombinator.com/item?id=14044517</a></p><p>Points: 336</p><p># Comments: 206</p>", "enclosures": [], "item_copyright": null, "link": "https://techcrunch.com/2017/04/05/uber-finds-one-allegedly-stolen-waymo-file-on-an-employees-personal-device/", "pubdate": "2017-04-05 18:48:43", "title": "Uber finds one allegedly stolen Waymo file on an employee\\u2019s personal device", "unique_id": "https://news.ycombinator.com/item?id=14044517", "updateddate": "2017-04-05 18:48:43"}, {"author_email": null, "author_link": "http://americancynic.net", "author_name": "A. Cynic", "comments": null, "description": "On the difference between democratic socialism and social democracy, the future of capitalism, and the socialist response to the Bernie Sanders presidential campaign.", "enclosures": [], "item_copyright": null, "link": "http://americancynic.net/log/2016/2/27/a_look_at_bernie_sanders_electoral_socialism/", "pubdate": "2016-02-27 22:33:51", "title": "A Look At Bernie Sanders\' Electoral Socialism", "unique_id": "tag:americancynic.net,2016-02-27:/log/2016/2/27/a_look_at_bernie_sanders_electoral_socialism/", "updateddate": "2017-02-15 07:00:00"}]'''
+        mc = build_mock_cacher()
+        fm = FeedMixer(feeds=['atom', 'rss'], cacher=mc, num_keep=1)
+        jf = fm.json_feed()
+        self.maxDiff = None
+        self.assertIn(expected, jf)
