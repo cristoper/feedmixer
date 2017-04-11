@@ -114,6 +114,15 @@ class TestMixedEntries(unittest.TestCase):
         self.assertIsInstance(fm.error_urls['fetcherror'], FeedCache.FetchError)
         self.assertIsInstance(fm.error_urls['parseerror'], FeedCache.ParseError)
 
+    def test_keep_all(self):
+        """
+        Setting num_keep to -1 should keep all the entries.
+        """
+        mc = build_mock_cacher()
+        fm = FeedMixer(feeds=['atom'], cacher=mc, num_keep=-1)
+        me = fm.mixed_entries
+        self.assertEqual(len(me), 12)
+
     def test_adds_feed_author(self):
         """
         Test that a feed missing the `author_detail` attribute on its entries
