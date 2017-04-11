@@ -131,7 +131,8 @@ class FeedMixer(object):
         """
         # (The default encoding lambda is so that we can handle datetime
         # objects)
-        return json.dumps(self.mixed_entries, default=lambda o: str(o))
+        return json.dumps(self.mixed_entries, default=lambda o: str(o),
+                          sort_keys=True)
 
     def __fetch_entries(self) -> None:
         """
