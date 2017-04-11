@@ -139,8 +139,12 @@ class TestMixedEntries(unittest.TestCase):
 
 class TestAtomFeed(unittest.TestCase):
     def test_atom_feed(self):
-        known_good = """"""
+        """
+        Test serialization as atom.
+        """
+        expected = '''<?xml version="1.0" encoding="utf-8"?>\n<feed xmlns="http://www.w3.org/2005/Atom"><title>Title</title><link href="" rel="alternate"></link><id></id><updated>2017-04-05T18:48:43Z</updated><entry><title>Uber finds one allegedly stolen Waymo file on an employee’s personal device</title><link href="https://techcrunch.com/2017/04/05/uber-finds-one-allegedly-stolen-waymo-file-on-an-employees-personal-device/" rel="alternate"></link><published>2017-04-05T18:48:43Z</published><updated>2017-04-05T18:48:43Z</updated><author><name>folz</name></author><id>https://news.ycombinator.com/item?id=14044517</id><summary type="html">&lt;p&gt;Article URL: &lt;a href="https://techcrunch.com/2017/04/05/uber-finds-one-allegedly-stolen-waymo-file-on-an-employees-personal-device/"&gt;https://techcrunch.com/2017/04/05/uber-finds-one-allegedly-stolen-waymo-file-on-an-employees-personal-device/&lt;/a&gt;&lt;/p&gt;&lt;p&gt;Comments URL: &lt;a href="https://news.ycombinator.com/item?id=14044517"&gt;https://news.ycombinator.com/item?id=14044517&lt;/a&gt;&lt;/p&gt;&lt;p&gt;Points: 336&lt;/p&gt;&lt;p&gt;# Comments: 206&lt;/p&gt;</summary></entry><entry><title>A Look At Bernie Sanders\' Electoral Socialism</title><link href="http://americancynic.net/log/2016/2/27/a_look_at_bernie_sanders_electoral_socialism/" rel="alternate"></link><published>2016-02-27T22:33:51Z</published><updated>2017-02-15T07:00:00Z</updated><author><name>A. Cynic</name><uri>http://americancynic.net</uri></author><id>tag:americancynic.net,2016-02-27:/log/2016/2/27/a_look_at_bernie_sanders_electoral_socialism/</id><summary type="html">On the difference between democratic socialism and social democracy, the future of capitalism, and the socialist response to the Bernie Sanders presidential campaign.</summary></entry></feed>'''
         mc = build_mock_cacher()
         fm = FeedMixer(feeds=['atom', 'rss'], cacher=mc, num_keep=1)
         af = fm.atom_feed()
-        self.assertEqual(af, known_good)
+        self.maxDiff = None
+        self.assertIn(expected, af)
