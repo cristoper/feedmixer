@@ -138,6 +138,21 @@ class TestMixedEntries(unittest.TestCase):
         self.assertIn('author_name', me[0])
 
 
+class TestFeed(unittest.TestCase):
+    def test_set_feed(self):
+        """
+        Test that setting the feed property clears existing mixed_entries.
+        """
+        # First fetch some entries
+        mc = build_mock_cacher()
+        fm = FeedMixer(feeds=['atom', 'rss'], cacher=mc, num_keep=1)
+        self.assertEqual(len(fm.mixed_entries), 2)
+
+        # Now clear feeds and assert that mixed_entries is also cleared
+        fm.feeds = []
+        self.assertEqual(len(fm.mixed_entries), 0)
+
+
 class TestAtomFeed(unittest.TestCase):
     def test_atom_feed(self):
         """
