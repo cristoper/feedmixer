@@ -1,6 +1,5 @@
 import unittest
 from unittest.mock import MagicMock, call
-import feedcache
 from feedcache import FeedCache
 from urllib.error import URLError
 import feedparser
@@ -10,13 +9,20 @@ ATOM_PATH = 'test/test_atom.xhtml'
 RSS_PATH = 'test/test_rss2.xhtml'
 
 
+with open(ATOM_PATH, 'r') as f:
+    feed = ''.join(f.readlines())
+    TEST_ATOM = feedparser.parse(feed)
+
+with open(RSS_PATH, 'r') as f:
+    feed = ''.join(f.readlines())
+    TEST_RSS = feedparser.parse(feed)
+
+
 def build_mock_cacher():
     def mock_fetch(url):
         """Mimics the FeedCache.fetch() method"""
         if url == "atom":
-            with open(ATOM_PATH, 'r') as f:
-                feed = ''.join(f.readlines())
-                return feedparser.parse(feed)
+            return TEST_ATOM
         elif url == "fetcherror":
             raise FeedCache.FetchError("fetch error")
         elif url == "parseerror":
@@ -25,15 +31,14 @@ def build_mock_cacher():
             raise URLError("URL error")
         else:
             # url == "rss"
-            with open(RSS_PATH, 'r') as f:
-                feed = ''.join(f.readlines())
-                return feedparser.parse(feed)
+            return TEST_RSS
     return MagicMock(side_effect=mock_fetch)
 
 # __init__(self, title: str='Title', link: str='', desc: str='', feeds:
 #                 List[Optional[str]]=[], num_keep: int=3, max_threads: int=5,
 #                 max_feeds: int=100, cache_path: str='fmcache.db', cacher:
 #                 Optional[Callable[[str], FeedParserDict]]=None) -> None:
+
 
 class TestMixedEntries(unittest.TestCase):
     def test_empty(self):
@@ -113,11 +118,12 @@ class TestMixedEntries(unittest.TestCase):
         Test that a feed missing the `author_detail` attribute on its entries
         has it added.
         """
-        # Load in this test so we can ensure that any future changes to the test
-        # file at ATOM_PATH don't include <author> for each entry
-        with open(ATOM_PATH, 'r') as f:
-            feed = ''.join(f.readlines())
-            feed = feedparser.parse(feed)
+        # Ensure that any future changes to the test file at ATOM_PATH don't
+        # include <author> for each entry (which would render this test useless)
+        feed = TEST_ATOM
+        first = feed['entries'][0]
+        if hasattr(first, 'author_detail'):
+            del first['author_detail']
         first_entry = feed['entries'][0]
         self.assertNotIn('author_detail', first_entry)
         self.assertNotIn('author_name', first_entry)
@@ -129,3 +135,12 @@ class TestMixedEntries(unittest.TestCase):
         me = fm.mixed_entries
         mc.assert_called_once_with('atom')
         self.assertIn('author_name', me[0])
+
+
+class TestAtomFeed(unittest.TestCase):
+    def test_atom_feed(self):
+        known_good = """"""
+        mc = build_mock_cacher()
+        fm = FeedMixer(feeds=['atom', 'rss'], cacher=mc, num_keep=1)
+        af = fm.atom_feed()
+        self.assertEqual(af, known_good)
