@@ -100,7 +100,7 @@ class FeedMixer(object):
         return self._feeds
 
     @feeds.setter
-    def feeds(self, value: List[str]):
+    def feeds(self, value: List[str]) -> None:
         """
         Reset _mixed_entries whenever we get a new list of feeds.
         """
