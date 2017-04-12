@@ -48,6 +48,7 @@ import logging
 import fcntl
 from fcntl import flock
 from typing import Union
+import dbm
 
 logger = logging.getLogger(__name__)
 lock_t = Union[threading.Lock, multiprocessing.Lock]
@@ -135,7 +136,14 @@ class RWShelf(object):
         else:
             ltype = fcntl.LOCK_EX
             # Create file if it doesn't exist:
-            with shelve.open(filename, 'c'):
+            try:
+                with shelve.open(filename, 'c'):
+                    pass
+            except dbm.error:
+                # If we got here, then more than one thread/process tried to
+                # create the file at the same time and gdbm's own locking threw
+                # an exception. It doesn't matter, the threads/procs will be
+                # synchronized by the flock below.
                 pass
         self.fd = open(filename, 'r+')
         flock(self.fd, ltype)
