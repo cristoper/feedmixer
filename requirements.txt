@@ -1,0 +1,2 @@
+git+git://github.com/cristoper/feedparser.git@no-independent-content-and-description-order#egg=feedparser
+feedgenerator
