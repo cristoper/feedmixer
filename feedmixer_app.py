@@ -1,6 +1,8 @@
 from feedmixer import FeedMixer
 import falcon
 from typing import NamedTuple, List
+import json
+import urllib
 
 ParsedQS = NamedTuple('ParsedQS', [('f', List[str]),
                                    ('n', int)])
@@ -35,14 +37,27 @@ class MixedFeed:
         method_name = "{}_feed".format(self.ftype)
         method = getattr(fm, method_name)
         resp.body = method()
+
+        if fm.error_urls:
+            # There were errors; report them in the 'X-fm-errors' http header as
+            # a url-encoded JSON hash
+            error_dict = {}
+            for url, e in fm.error_urls.items():
+                err_str = str(e)
+                if e.status:
+                    err_str += " ({})".format(e.status)
+                error_dict[url] = err_str
+            json_err = urllib.parse.quote(json.dumps(error_dict))
+            resp.append_header('X-fm-errors', json_err)
+
         resp.content_type = "application/{}".format(self.ftype)
         resp.status = falcon.HTTP_200
 
 atom = MixedFeed(ftype='atom')
 rss = MixedFeed(ftype='rss')
-json = MixedFeed(ftype='json')
+jsn = MixedFeed(ftype='json')
 
 api = application = falcon.API()
 api.add_route('/atom', atom)
 api.add_route('/rss', rss)
-api.add_route('/json', json)
+api.add_route('/json', jsn)
