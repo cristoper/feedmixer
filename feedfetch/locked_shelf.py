@@ -121,7 +121,10 @@ class RWShelf(object):
 
     def __init__(self, filename: str, flag: str = 'c'):
         """
-        Opens shelf (sets shelve object to `shelf` attribute) and locks database
+        Opens shelf (sets shelve object to `shelf` attribute) and locks
+        database. If the database does not exist and the flag is 'r', then
+        raises a FileNotFoundError exception; if the flag is other than 'r',
+        then the database file is created.
 
         Args:
             filename: path to the shelve database file
@@ -131,6 +134,9 @@ class RWShelf(object):
             ltype = fcntl.LOCK_SH
         else:
             ltype = fcntl.LOCK_EX
+            # Create file if it doesn't exist:
+            with shelve.open(filename, 'c'):
+                pass
         self.fd = open(filename, 'r+')
         flock(self.fd, ltype)
         logger.info("Acquired lock for {} ({})".format(filename, ltype))
