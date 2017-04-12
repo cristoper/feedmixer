@@ -5,8 +5,11 @@ from typing import NamedTuple, List
 ParsedQS = NamedTuple('ParsedQS', [('f', List[str]),
                                    ('n', int)])
 
+# Vars to config:
 TITLE = "FeedMixer feed"
 DESC = "{type} feed created by FeedMixer."
+# The path where the cache database file will be created:
+DBPATH = "fmcache.db"
 
 
 def parse_qs(req: falcon.Request) -> ParsedQS:
@@ -25,7 +28,8 @@ class MixedFeed:
     def on_get(self, req: falcon.Request, resp: falcon.Response) -> None:
         feeds, n = parse_qs(req)
         fm = FeedMixer(feeds=feeds, num_keep=n, title=TITLE,
-                       desc=DESC.format(type=self.ftype), link=req.uri)
+                       desc=DESC.format(type=self.ftype), link=req.uri,
+                       cache_path=DBPATH)
 
         # dynamically find and call appropriate method based on ftype:
         method_name = "{}_feed".format(self.ftype)
