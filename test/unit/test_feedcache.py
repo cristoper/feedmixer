@@ -7,7 +7,7 @@ import datetime
 from urllib.error import URLError
 from http.client import NOT_MODIFIED, OK
 
-ATOM_PATH = 'test/test_atom.xhtml'
+ATOM_PATH = 'test/test_atom.xml'
 
 
 def mock_locked_shelf(return_value=None):

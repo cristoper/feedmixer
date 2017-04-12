@@ -6,8 +6,8 @@ import feedparser
 from feedmixer import FeedMixer
 from copy import deepcopy
 
-ATOM_PATH = 'test/test_atom.xhtml'
-RSS_PATH = 'test/test_rss2.xhtml'
+ATOM_PATH = 'test/test_atom.xml'
+RSS_PATH = 'test/test_rss2.xml'
 
 
 with open(ATOM_PATH, 'r') as f:
