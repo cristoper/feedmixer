@@ -44,7 +44,7 @@ class MixedFeed:
             error_dict = {}
             for url, e in fm.error_urls.items():
                 err_str = str(e)
-                if e.status:
+                if hasattr(e, 'status'):
                     err_str += " ({})".format(e.status)
                 error_dict[url] = err_str
             json_err = urllib.parse.quote(json.dumps(error_dict))
