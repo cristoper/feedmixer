@@ -1,1 +1,1 @@
-from .feedfetch import FeedCache
+from feedfetch.feedcache import FeedCache

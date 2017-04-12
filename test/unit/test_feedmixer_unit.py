@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import MagicMock, call
-from feedcache import FeedCache
+from feedfetch import FeedCache
 from urllib.error import URLError
 import feedparser
 from feedmixer import FeedMixer

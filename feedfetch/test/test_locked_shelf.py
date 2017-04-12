@@ -1,4 +1,4 @@
-from locked_shelf import MutexShelf, RWShelf
+from feedfetch.locked_shelf import MutexShelf, RWShelf
 import shelve
 import unittest
 import os

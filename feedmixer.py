@@ -34,7 +34,7 @@ import feedgenerator
 from feedgenerator import Rss201rev2Feed, Atom1Feed, SyndicationFeed
 from feedparser.util import FeedParserDict
 
-from feedcache import FeedCache
+from feedfetch import FeedCache
 
 # Types:
 error_dict_t = Dict[str, Exception]

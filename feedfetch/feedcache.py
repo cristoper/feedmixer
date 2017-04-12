@@ -4,7 +4,6 @@ caching to Mark Pilgrim's feedparser (https://pypi.python.org/pypi/feedparser)
 
 feedparser on github: https://github.com/kurtmckee/feedparser
 """
-
 import feedparser
 import os.path
 import datetime

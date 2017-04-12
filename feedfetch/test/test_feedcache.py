@@ -1,7 +1,7 @@
-from feedcache import FeedCache
+from feedfetch import FeedCache
 import unittest
 from unittest.mock import patch, MagicMock, ANY
-from locked_shelf import RWShelf
+from feedfetch.locked_shelf import RWShelf
 import feedparser
 import datetime
 from urllib.error import URLError
