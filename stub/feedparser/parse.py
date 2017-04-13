@@ -1,11 +1,12 @@
 import feedparser.util
 from typing import Optional, Union, Tuple, List, Dict
 import io
-import urllib2
+import urllib
+import urllib.request
 
 time_t = Union[Tuple[int, int, int, int, int, int, int, int, int], str]
 stream_str_t = Union[io.FileIO, str]
-handlers_t = List[urllib2.BaseHandler]
+handlers_t = List[urllib.request.BaseHandler]
 headers_t = Dict[str, str]
 
 

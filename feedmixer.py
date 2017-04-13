@@ -27,17 +27,19 @@ import logging
 import concurrent.futures
 from concurrent.futures import ThreadPoolExecutor
 import json
-from typing import List, Optional, Callable, Dict
+from typing import List, Optional, Callable, Dict, Union
 
 # https://docs.djangoproject.com/en/1.10/_modules/django/utils/feedgenerator/
 import feedgenerator
 from feedgenerator import Rss201rev2Feed, Atom1Feed, SyndicationFeed
 from feedparser.util import FeedParserDict
 
-from feedfetch import FeedCache
+from feedfetch import FeedCache, FetchError, ParseError
+from urllib.error import URLError
 
 # Types:
-error_dict_t = Dict[str, Exception]
+FCException = Union[FetchError, ParseError, URLError]
+error_dict_t = Dict[str, FCException]
 
 logger = logging.getLogger(__name__)
 
@@ -167,14 +169,14 @@ class FeedMixer(object):
                     logger.info("{} generated an exception: {}".format(url, e))
 
         # sort entries by published date
-        parsed_entries.sort(key=lambda e: e.published, reverse=True)
+        parsed_entries.sort(key=lambda e: e['published'], reverse=True)
 
         # extract metadata into a form usable by feedgenerator
         mixed_entries = self.extract_meta(parsed_entries)
         self._mixed_entries = mixed_entries
 
     @staticmethod
-    def extract_meta(parsed_entries: List[FeedParserDict]) -> List[dict]:
+    def extract_meta(parsed_entries: List[dict]) -> List[dict]:
         """
         Convert a FeedParserDict object into a dict compatible with the Django
         feedgenerator classes.
@@ -189,9 +191,9 @@ class FeedMixer(object):
             metadata['description'] = e.get('description', '')
 
             if 'author_detail' in e:
-                metadata['author_email'] = e.author_detail.get('email')
-                metadata['author_name'] = e.author_detail.get('name')
-                metadata['author_link'] = e.author_detail.get('href')
+                metadata['author_email'] = e['author_detail'].get('email')
+                metadata['author_name'] = e['author_detail'].get('name')
+                metadata['author_link'] = e['author_detail'].get('href')
 
             # convert time_struct tuples into datetime objects
             # (the min() prevents error in the off-chance that the
@@ -211,11 +213,11 @@ class FeedMixer(object):
             metadata['item_copyright'] = e.get('license')
 
             if 'tags' in e:
-                taglist = [tag.get('term') for tag in e.tags]
+                taglist = [tag.get('term') for tag in e['tags']]
                 metadata['categories'] = taglist
             if 'enclosures' in e:
                 enclist = []
-                for enc in e.enclosures:
+                for enc in e['enclosures']:
                     enclist.append(feedgenerator.Enclosure(enc.href, enc.length,
                                                            enc.type))
                 metadata['enclosures'] = enclist

@@ -21,7 +21,7 @@ class GdbmfilenameShelf(shelve.Shelf):
     """Shelf implementation using the GNU (gdbm) interface."""
 
     def __init__(self, filename: str, flag: str = 'c', protocol: int = None,
-                 writeback: bool = False):
+                 writeback: bool = False) -> None:
         super().__init__(dbm.gnu.open(filename, flag), protocol, writeback)
 
 

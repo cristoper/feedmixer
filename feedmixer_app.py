@@ -3,6 +3,7 @@ import falcon
 from typing import NamedTuple, List
 import json
 import urllib
+import urllib.parse
 
 ParsedQS = NamedTuple('ParsedQS', [('f', List[str]),
                                    ('n', int)])
@@ -23,8 +24,8 @@ def parse_qs(req: falcon.Request) -> ParsedQS:
 
 
 class MixedFeed:
-    def __init__(self, ftype: str='atom', *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
+    def __init__(self, ftype: str='atom') -> None:
+        super().__init__()
         self.ftype = ftype
 
     def on_get(self, req: falcon.Request, resp: falcon.Response) -> None:
