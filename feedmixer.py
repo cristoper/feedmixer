@@ -141,7 +141,7 @@ class FeedMixer(object):
         `feedgernerator`-compatible metadata, and then stores the list of
         entries as `self.mixed_entries`
         """
-        parsed_entries = []
+        parsed_entries = []  # type: List[dict]
         self._error_urls = {}
         with ThreadPoolExecutor(max_workers=self.max_threads) as exec:
             future_to_url = {exec.submit(self.cacher, url): url for url in
