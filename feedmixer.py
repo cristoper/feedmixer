@@ -27,19 +27,20 @@ import logging
 import concurrent.futures
 from concurrent.futures import ThreadPoolExecutor
 import json
-from typing import List, Optional, Callable, Dict, Union
+from typing import Type, List, Optional, Callable, Dict, Union
 
 # https://docs.djangoproject.com/en/1.10/_modules/django/utils/feedgenerator/
 import feedgenerator
 from feedgenerator import Rss201rev2Feed, Atom1Feed, SyndicationFeed
 from feedparser.util import FeedParserDict
 
-from feedfetch import FeedCache, FetchError, ParseError
+from feedfetch import FeedCache
 from urllib.error import URLError
 
 # Types:
-FCException = Union[FetchError, ParseError, URLError]
+FCException = Union[FeedCache.FetchError, FeedCache.ParseError, URLError]
 error_dict_t = Dict[str, FCException]
+cacher_t = Callable[[str], FeedParserDict]
 
 logger = logging.getLogger(__name__)
 
@@ -48,7 +49,7 @@ class FeedMixer(object):
     def __init__(self, title: str='Title', link: str='', desc: str='', feeds:
                  List[Optional[str]]=[], num_keep: int=3, max_threads: int=5,
                  max_feeds: int=100, cache_path: str='fmcache.db', cacher:
-                 Optional[Callable[[str], FeedParserDict]]=None) -> None:
+                 Optional[cacher_t]=None) -> None:
         """
         Args:
             title: the title of the generated feed
@@ -164,7 +165,8 @@ class FeedMixer(object):
                                 e['author_detail'] = f.feed.author_detail
                                 e.author_detail = f.feed.author_detail
                     parsed_entries += newest
-                except Exception as e:
+                except (FeedCache.FetchError, FeedCache.ParseError,
+                        URLError) as e:
                     self._error_urls[url] = e
                     logger.info("{} generated an exception: {}".format(url, e))
 
@@ -225,7 +227,7 @@ class FeedMixer(object):
             mixed_entries.append(metadata)
         return mixed_entries
 
-    def __generate_feed(self, gen_cls: SyndicationFeed) -> SyndicationFeed:
+    def __generate_feed(self, gen_cls: Type[SyndicationFeed]) -> SyndicationFeed:
         """
         Generate a feed using one of the generator classes from the Django
         `feedgenerator` module.
