@@ -223,7 +223,7 @@ class FeedMixer(object):
             mixed_entries.append(metadata)
         return mixed_entries
 
-    def __generate_feed(self, gen_cls: SyndicationFeed) -> str:
+    def __generate_feed(self, gen_cls: SyndicationFeed) -> SyndicationFeed:
         """
         Generate a feed using one of the generator classes from the Django
         `feedgenerator` module.
