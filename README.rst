@@ -6,13 +6,13 @@ feed.
 
 The project consists of three modules:
 
-- :mod:`feedmixer.py <feedmixer>` - contains the core logic
-- :mod:`feedmixer_api.py <feedmixer_api>` - contains the Falcon_-based API. Call :meth:`~feedmixer_api.wsgi_app` to
+- ``feedmixer.py`` - contains the core logic
+- ``feedmixer_api.py`` - contains the Falcon_-based API. Call ``wsgi_app()`` to
   get a WSGI-compliant object to host.
-- :mod:`feedmixer_wsgi.py <feedmixer_wsgi>` - contains an actual WSGI application which can be used
+- ``feedmixer_wsgi.py`` - contains an actual WSGI application which can be used
   as-is or as a template to customize.
 
-The :mod:`feedmixer_wsgi` module instantiates the feedmixer WSGI object (with
+The feedmixer_wsgi module instantiates the feedmixer WSGI object (with
 sensible defaults and a rotating logfile) as both `api` and `application`
 (default names used by common WSGI servers). To start the service with
 gunicorn_, for example, clone the repository and in the root directory run::
@@ -71,7 +71,7 @@ Installation
 
 #. Install dependencies: ``$ pip3 install -r requirements.txt``
 
-:mod:`feedmixer_wsgi` should run in any WSGI server (uwsgi, gunicorn, mod_wsgi, ...). Refer to the documentation for your server of choice.
+``feedmixer_wsgi`` should run in any WSGI server (uwsgi, gunicorn, mod_wsgi, ...). Refer to the documentation for your server of choice.
 
 .. _`virtual environment`: https://virtualenv.pypa.io/en/stable/
 
