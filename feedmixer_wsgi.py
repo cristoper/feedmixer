@@ -1,19 +1,21 @@
 """
-This module instantiates the feedmixer WSGI object with sensible defaults as
-both `api` and `application` (default names used by common WSGI servers). To
-start the service with gunicorn_, for example, clone the repository and in the
-root directory run::
+This module instantiates the feedmixer WSGI object with sensible defaults and a
+rotating logfiel as both `api` and `application` (default names used by common
+WSGI servers). To start the service with gunicorn_, for example, clone the
+repository and in the root directory run::
 
 $ gunicorn feedmixer_app
 
+This file can be used-as is or copied as a template (to customize things like
+the title, description, cache database path, logging, etc.)
 
-If you need to provide different parameters (`title`, `desc`, `db_path`), copy
-or edit this file and pass them to `wsgi_app()`. See the documentation in
-`feedmixer_wsgi.py`.
+The top-level install directory must be writable by the server running the app,
+because it creates the logfiles ('fm.log' and 'fm.log.1') and its cache db
+there.
 
 .. _gunicorn: http://gunicorn.org/
 """
-from feedmixer_wsgi import wsgi_app
+from feedmixer_api import wsgi_app
 import socket
 import logging
 import logging.handlers
