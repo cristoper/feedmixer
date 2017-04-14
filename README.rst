@@ -4,9 +4,22 @@ FeedMixer is a WSGI micro web service which takes a list of feed URLs and
 returns a new feed consisting of the most recent `n` entries from each given
 feed.
 
-The module variable `api` (also available as `application`) is a WSGI-compliant object. To start the service with gunicorn_, for example, clone the repository and in the root directory run::
+The `feedmixer_app` module instantiates the feedmixer WSGI object with sensible
+defaults as both `api` and `application` (default names used by common WSGI
+servers). To start the service with gunicorn_, for example, clone the
+repository and in the root directory run::
 
-$ gunicorn --reload feedmixer_app:api
+$ gunicorn feedmixer_app
+
+Creating an app with custom parameters (`title`, `desc`, `db_path`) can be
+accomplished by creating a new module which calls :meth:`feedmixer_wsgi.wsgi_app`:
+
+.. code-block:: python
+
+    from feedmixer_wsgi import wsgi_app
+
+    api = application = wsgi_app(title='Some custom title',
+                                 db_path='path/to/cache.db')
 
 .. _gunicorn: http://gunicorn.org/
 

@@ -11,6 +11,7 @@ Welcome to feedmixer's documentation!
    :caption: Contents:
 
    README
+   feedmixer_wsgi
    feedmixer_app
    feedmixer
 
