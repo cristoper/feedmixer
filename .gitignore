@@ -1,5 +1,7 @@
 *.sw[po]
 __pycache__
 fmcache.db
+fmcache
 venv
 .ropeproject
+doc/_build
