@@ -6,7 +6,8 @@ feed.
 Calling `wsgi_app()` returns a WSGI-compliant callable which can be hosted by
 any WSGI server.
 
-See the included README.rst file for more documentation.
+See `feedmixer.wsgi` for an example webservice which can be used as-is or copied
+and modified.
 
 Usage
 -----

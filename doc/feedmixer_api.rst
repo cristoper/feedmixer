@@ -1,7 +1,7 @@
-feedmixer\_app module
+feedmixer\_api module
 =====================
 
-.. automodule:: feedmixer_app
+.. automodule:: feedmixer_api
     :members:
     :undoc-members:
     :show-inheritance:

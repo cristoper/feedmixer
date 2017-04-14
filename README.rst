@@ -4,23 +4,27 @@ FeedMixer is a WSGI micro web service which takes a list of feed URLs and
 returns a new feed consisting of the most recent `n` entries from each given
 feed.
 
-The `feedmixer_app` module instantiates the feedmixer WSGI object with sensible
-defaults as both `api` and `application` (default names used by common WSGI
-servers). To start the service with gunicorn_, for example, clone the
-repository and in the root directory run::
+The project consists of three modules:
 
-$ gunicorn feedmixer_app
+- :mod:`feedmixer.py <feedmixer>` - contains the core logic
+- :mod:`feedmixer_api.py <feedmixer_api>` - contains the Falcon_-based API. Call :meth:`~feedmixer_api.wsgi_app` to
+  get a WSGI-compliant object to host.
+- :mod:`feedmixer_wsgi.py <feedmixer_wsgi>` - contains an actual WSGI application which can be used
+  as-is or as a template to customize.
 
-Creating an app with custom parameters (`title`, `desc`, `db_path`) can be
-accomplished by creating a new module which calls :meth:`feedmixer_wsgi.wsgi_app`:
+The :mod:`feedmixer_wsgi` module instantiates the feedmixer WSGI object (with
+sensible defaults and a rotating logfile) as both `api` and `application`
+(default names used by common WSGI servers). To start the service with
+gunicorn_, for example, clone the repository and in the root directory run::
 
-.. code-block:: python
+$ gunicorn feedmixer.wsgi
 
-    from feedmixer_wsgi import wsgi_app
+Note that the top-level install directory must be writable by the server
+running the app, because it creates the logfiles ('fm.log' and 'fm.log.1') and
+its cache database ('fmcache') there.
 
-    api = application = wsgi_app(title='Some custom title',
-                                 db_path='path/to/cache.db')
 
+.. _falcon: https://falconframework.org/
 .. _gunicorn: http://gunicorn.org/
 
 Usage
@@ -67,7 +71,10 @@ Installation
 
 #. Install dependencies: ``$ pip3 install -r requirements.txt``
 
-FeedMixer should run in any WSGI server (uwsgi, gunicorn, mod_wsgi, ...). Refer to the documentation for your server of choice. (The module to run is `feedmixer_app.py` and the WSGI object is `api`).
+FeedMixer should run in any WSGI server (uwsgi, gunicorn, mod_wsgi, ...). Refer to the documentation for your server of choice.
+
+mod_wsgi
+~~~~~~~~
 
 TODO: example mod_wsgi setup.
 

@@ -12,7 +12,7 @@ Welcome to feedmixer's documentation!
 
    README
    feedmixer_wsgi
-   feedmixer_app
+   feedmixer_api
    feedmixer
 
 
