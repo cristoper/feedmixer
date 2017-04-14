@@ -63,7 +63,7 @@ ParsedQS = NamedTuple('ParsedQS', [('f', List[str]),
 TITLE = "FeedMixer feed"
 DESC = "{type} feed created by FeedMixer."
 # The path where the cache database file will be created:
-DBPATH = "fmcache.db"
+DBPATH = "fmcache"
 
 
 def parse_qs(req: falcon.Request) -> ParsedQS:

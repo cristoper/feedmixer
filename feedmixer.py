@@ -78,11 +78,11 @@ logger = logging.getLogger(__name__)
 class FeedMixer(object):
     def __init__(self, title: str='Title', link: str='', desc: str='', feeds:
                  List[Optional[str]]=[], num_keep: int=3, max_threads: int=5,
-                 max_feeds: int=100, cache_path: str='fmcache.db', cacher:
+                 max_feeds: int=100, cache_path: str='fmcache', cacher:
                  Optional[cacher_t]=None) -> None:
         """
         __init__(self, title, link='', desc='', feeds=[], num_keep=3, \
-            max_thread=5, max_feeds=100, cache_path='fmcache.db')
+            max_thread=5, max_feeds=100, cache_path='fmcache')
 
         Args:
             title: the title of the generated feed
