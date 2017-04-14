@@ -3,6 +3,9 @@ import feedmixer_app
 from urllib.parse import unquote
 import json
 import feedparser
+import os
+
+TESTDB = 'fm_test_cache'
 
 
 def build_qs(feeds=[], n=-1):
@@ -15,7 +18,10 @@ def build_qs(feeds=[], n=-1):
 class FMTestCase(testing.TestCase):
     def setUp(self):
         super().setUp()
-        self.app = feedmixer_app.api
+        self.app = feedmixer_app.wsgi_app(db_path=TESTDB)
+
+    def tearDown(self):
+        os.remove(TESTDB)
 
     def get_results_errors(self, path='/', qs=''):
         """
