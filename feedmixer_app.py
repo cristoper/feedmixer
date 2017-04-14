@@ -15,6 +15,22 @@ or edit this file and pass them to `wsgi_app()`. See the documentation in
 """
 from feedmixer_wsgi import wsgi_app
 import socket
+import logging
+import logging.handlers
+
+LOG_PATH = 'fm.log'
+LOG_LEVEL = logging.INFO
+
+# Setup root logger to log to rotating log file
+handler = logging.handlers.RotatingFileHandler(LOG_PATH, maxBytes=100000,
+                                               backupCount=1)
+formatter = logging.Formatter('%(asctime)s %(levelname)s:%(message)s')
+handler.setFormatter(formatter)
+handler.setLevel(LOG_LEVEL)
+root_logger = logging.getLogger()
+root_logger.setLevel(LOG_LEVEL)
+root_logger.addHandler(handler)
+
 
 TIMEOUT = 120  # time to wait for http requests (seconds)
 socket.setdefaulttimeout(TIMEOUT)
