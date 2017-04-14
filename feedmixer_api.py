@@ -6,7 +6,7 @@ feed.
 Calling `wsgi_app()` returns a WSGI-compliant callable which can be hosted by
 any WSGI server.
 
-See the include README.rst file for more documentation.
+See the included README.rst file for more documentation.
 
 Usage
 -----
