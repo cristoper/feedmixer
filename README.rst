@@ -71,14 +71,36 @@ Installation
 
 #. Install dependencies: ``$ pip3 install -r requirements.txt``
 
-FeedMixer should run in any WSGI server (uwsgi, gunicorn, mod_wsgi, ...). Refer to the documentation for your server of choice.
+:mod:`feedmixer_wsgi` should run in any WSGI server (uwsgi, gunicorn, mod_wsgi, ...). Refer to the documentation for your server of choice.
+
+.. _`virtual environment`: https://virtualenv.pypa.io/en/stable/
 
 mod_wsgi
 ~~~~~~~~
 
-TODO: example mod_wsgi setup.
+This is how I've deployed FeedMixer with Apache and mod_wsgi_ (on Debian):
 
-.. _`virtual environment`: https://virtualenv.pypa.io/en/stable/
+#. Create a directory outside of your Apache DocumentRoot in which to install: ``$ sudo mkdir /usr/lib/wsgi-bin``
+#. Install as above (so the cloned repo is at ``/usr/lib/wsgi-bin/feedmixer``
+#. Give Apache write permissions: ``$ sudo chown :www-data feedmixer; sudo chmod g+w feedmixer``
+#. Configure Apache using something like the snippet below (either in apache2.conf or in a VirtualHost directive):
+
+.. code-block:: apache
+
+    WSGIDaemonProcess feedmixer processes=1 threads=10 \
+	python-home=/usr/lib/wsgi-bin/feedmixer/venv \
+	python-path=/usr/lib/wsgi-bin/feedmixer \
+	home=/usr/lib/wsgi-bin/feedmixer
+    WSGIProcessGroup feedmixer
+    WSGIApplicationGroup %{GLOBAL}
+    WSGIScriptAlias /feedmixer /usr/lib/wsgi-bin/fm/feedmixer_wsgi.py
+    <Directory "/usr/lib/wsgi-bin"> 
+	    Require all granted
+    </Directory>
+
+The main things to note are the ``pythong-home`` (set to the virtualenv directory), ``python-path``, and ``home`` options to the ``WSGIDaemonProcess``.
+
+.. _mod_wsgi: https://modwsgi.readthedocs.io/en/develop/
 
 Hacking
 -------
