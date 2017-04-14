@@ -94,11 +94,16 @@ This is how I've deployed FeedMixer with Apache and mod_wsgi_ (on Debian):
     WSGIProcessGroup feedmixer
     WSGIApplicationGroup %{GLOBAL}
     WSGIScriptAlias /feedmixer /usr/lib/wsgi-bin/fm/feedmixer_wsgi.py
-    <Directory "/usr/lib/wsgi-bin"> 
-	    Require all granted
+    <Directory "/usr/lib/wsgi-bin">
+	Require all granted
+	Header set Access-Control-Allow-Origin "*"
     </Directory>
 
 The main things to note are the ``pythong-home`` (set to the virtualenv directory), ``python-path``, and ``home`` options to the ``WSGIDaemonProcess``.
+
+Also note the CORS header in the Directory directive which allows the feed to
+be fetched by JavaScript clients from any domain (this require ``mod_headers``
+to be enabled). Restrict (or remove) as your application requires.
 
 .. _mod_wsgi: https://modwsgi.readthedocs.io/en/develop/
 
