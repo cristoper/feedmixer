@@ -34,7 +34,7 @@ As an example, assuming an instance of the FeedMixer app is running on the local
 
 The constructed URL to GET is:
 
-`http://localhost:8000/atom?f=http://mretc.net/shaarli/?do=atom&f=https://hnrss.org/newest&n=1`
+``http://localhost:8000/atom?f=http://mretc.net/shaarli/?do=atom&f=https://hnrss.org/newest&n=1``
 
 Entering it into a browser will return an Atom feed with two entries. To GET it from a client programatically, remember to URL-encode the `f` fields::
 
