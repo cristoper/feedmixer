@@ -161,6 +161,19 @@ class TestFeed(unittest.TestCase):
         fm.feeds = []
         self.assertEqual(len(fm.mixed_entries), 0)
 
+    def test_set_num_keep(self):
+        """
+        Test that setting the num_keep property re-fetches the feeds.
+        """
+        # First fetch some entries
+        mc = build_mock_cacher()
+        fm = FeedMixer(feeds=['atom', 'rss'], cacher=mc, num_keep=2)
+        self.assertEqual(len(fm.mixed_entries), 4)
+
+        # Now clear feeds and assert that mixed_entries is also cleared
+        fm.num_keep = 1
+        self.assertEqual(len(fm.mixed_entries), 2)
+
 
 class TestAtomFeed(unittest.TestCase):
     def test_atom_feed(self):
