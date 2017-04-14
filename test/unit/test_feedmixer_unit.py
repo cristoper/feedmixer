@@ -35,11 +35,6 @@ def build_mock_cacher():
             return TEST_RSS
     return MagicMock(side_effect=mock_fetch)
 
-# __init__(self, title: str='Title', link: str='', desc: str='', feeds:
-#                 List[Optional[str]]=[], num_keep: int=3, max_threads: int=5,
-#                 max_feeds: int=100, cache_path: str='fmcache.db', cacher:
-#                 Optional[Callable[[str], FeedParserDict]]=None) -> None:
-
 
 class TestMixedEntries(unittest.TestCase):
     def test_empty(self):
