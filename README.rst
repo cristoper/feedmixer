@@ -47,7 +47,7 @@ Installation
 1. Clone this repository
 2. Optional, but I recommend creating a `virtual environment`_:
 
-   a. ``$ virtualenv venv``
+   a. ``$ virtualenv venv`` or ``$ python3 -m venv venv``
    b. ``$ source venv/bin/activate``
 
 3. Install dependencies: ``$ pip3 install -r requirements.txt``
