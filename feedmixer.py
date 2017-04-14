@@ -76,9 +76,9 @@ logger = logging.getLogger(__name__)
 
 
 class FeedMixer(object):
-    def __init__(self, title: str='Title', link: str='', desc: str='', feeds:
-                 List[Optional[str]]=[], num_keep: int=3, max_threads: int=5,
-                 max_feeds: int=100, cache_path: str='fmcache', cacher:
+    def __init__(self, title='Title', link='', desc='', feeds:
+                 List[Optional[str]]=[], num_keep=3, max_threads=5,
+                 max_feeds=100, cache_path='fmcache', cacher:
                  Optional[cacher_t]=None) -> None:
         """
         __init__(self, title, link='', desc='', feeds=[], num_keep=3, \
