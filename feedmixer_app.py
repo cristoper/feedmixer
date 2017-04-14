@@ -1,3 +1,9 @@
+"""
+.. include:: fm_app_intro.rst
+
+Interface
+---------
+"""
 from feedmixer import FeedMixer
 import falcon
 from typing import NamedTuple, List
@@ -16,6 +22,11 @@ DBPATH = "fmcache.db"
 
 
 def parse_qs(req: falcon.Request) -> ParsedQS:
+    """
+    Get `feeds` and `num_keep` from request query string.
+
+    :param req: the Falcon request from which to parse the query string.
+    """
     qs = falcon.uri.parse_query_string(req.query_string)
     feeds = qs.get('f', [])
     n = qs.get('n', -1)
@@ -24,11 +35,24 @@ def parse_qs(req: falcon.Request) -> ParsedQS:
 
 
 class MixedFeed:
+    """
+    Used to handle HTTP GET requests to all three endpoints: '/atom', '/rss',
+    and '/json'
+
+    Any errors that occur are returned in a custom HTTP header ('X-fm-errors')
+    as a JSON hash.
+    """
     def __init__(self, ftype: str='atom') -> None:
+        """
+        :param ftype: one of 'atom', 'rss', or 'json'
+        """
         super().__init__()
         self.ftype = ftype
 
     def on_get(self, req: falcon.Request, resp: falcon.Response) -> None:
+        """
+        Falcon GET handler.
+        """
         feeds, n = parse_qs(req)
         fm = FeedMixer(feeds=feeds, num_keep=n, title=TITLE,
                        desc=DESC.format(type=self.ftype), link=req.uri,
