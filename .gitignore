@@ -5,3 +5,4 @@ fmcache
 venv
 .ropeproject
 doc/_build
+fm.log
