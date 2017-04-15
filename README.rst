@@ -142,7 +142,7 @@ mod_wsgi
 This is how I've deployed FeedMixer with Apache and mod_wsgi_ (on Debian):
 
 #. Create a directory outside of your Apache DocumentRoot in which to install: ``$ sudo mkdir /usr/lib/wsgi-bin``
-#. Install as above (so the cloned repo is at ``/usr/lib/wsgi-bin/feedmixer``
+#. Install as above (so the cloned repo is at ``/usr/lib/wsgi-bin/feedmixer``)
 #. Give Apache write permissions: ``$ sudo chown :www-data feedmixer; sudo chmod g+w feedmixer``
 #. Configure Apache using something like the snippet below (either in apache2.conf or in a VirtualHost directive):
 
