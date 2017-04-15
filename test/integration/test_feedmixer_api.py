@@ -1,5 +1,5 @@
 from falcon import testing
-import feedmixer_app
+import feedmixer_api
 from urllib.parse import unquote
 import json
 import feedparser
@@ -18,7 +18,7 @@ def build_qs(feeds=[], n=-1):
 class FMTestCase(testing.TestCase):
     def setUp(self):
         super().setUp()
-        self.app = feedmixer_app.wsgi_app(db_path=TESTDB)
+        self.app = feedmixer_api.wsgi_app(db_path=TESTDB)
 
     def tearDown(self):
         os.remove(TESTDB)
