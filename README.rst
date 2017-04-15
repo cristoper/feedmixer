@@ -111,6 +111,13 @@ unreliably available.
         }
     ]
 
+Non-featurs
+-----------
+FeedMixer does not (yet) do these things itself:
+
+- `Cache pruning <https://github.com/cristoper/feedmixer/issues/2>`_
+- Authentication
+- Rate limiting
 
 Installation
 ------------
