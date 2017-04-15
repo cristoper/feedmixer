@@ -55,7 +55,61 @@ The constructed URL to GET is:
 
 Entering it into a browser will return an Atom feed with two entries. To GET it from a client programatically, remember to URL-encode the `f` fields::
 
->>> curl 'localhost:8000/atom?f=http%3A%2F%2Fmretc.net%2Fshaarli%2F%3Fdo%3Datom&f=https%3A%2F%2Fhnrss.org%2Fnewest&n=1'
+$ curl 'localhost:8000/atom?f=http%3A%2F%2Fmretc.net%2Fshaarli%2F%3Fdo%3Datom&f=https%3A%2F%2Fhnrss.org%2Fnewest&n=1'
+
+Public Demo
+-----------
+
+An instance of FeedMixer is running at ``http://mretc.net/feedmixer`` to play
+with. It is for demonstration purposes only and may be rate-limited and
+unreliably available.
+
+`HTTPie <https://httpie.org/>`_ is a very nice command-line http client for testing RESTful services::
+
+>>> pip3 install httpie
+>>> http mretc.net/feedmixer/json f==http://hnrss.org/newest f==http://americancynic.net/atom.xml n==1
+
+.. code-block:: json
+
+    HTTP/1.1 200 OK
+    Access-Control-Allow-Origin: *
+    Connection: Keep-Alive
+    Content-Length: 1319
+    Content-Type: application/json
+    Date: Sat, 15 Apr 2017 00:25:18 GMT
+    Keep-Alive: timeout=5, max=100
+    Server: Apache/2.4.10 (Debian)
+
+    [
+        {
+            "author_email": null,
+            "author_link": null,
+            "author_name": "cwisecarver",
+            "comments": "https://news.ycombinator.com/item?id=14118526",
+            "description": "I'm working through a book on functional web development with Elixir, OTP, and Phoenix (search that string and you'll find it) and I started thinking about how this language and \"platform\" had come about. I'd like to know more. Any recommendations?",
+            "enclosures": [],
+            "item_copyright": null,
+            "link": "https://news.ycombinator.com/item?id=14118526",
+            "pubdate": "2017-04-15 00:20:09",
+            "title": "Ask HN: Book recommendations about how Erlang and OTP were developed?",
+            "unique_id": "https://news.ycombinator.com/item?id=14118526",
+            "updateddate": "2017-04-15 00:20:09"
+        },
+        {
+            "author_email": null,
+            "author_link": "http://americancynic.net",
+            "author_name": "A. Cynic",
+            "comments": null,
+            "description": "Here are some of the better introductions to the alt-right that I've found, just in case anybody wants to waste as much time as me reading about this stuff.",
+            "enclosures": [],
+            "item_copyright": null,
+            "link": "http://americancynic.net/log/2017/3/2/guides_to_the_alt-right/",
+            "pubdate": "2017-03-02 16:42:49",
+            "title": "Guides to the Alt-Right",
+            "unique_id": "tag:americancynic.net,2017-03-02:/log/2017/3/2/guides_to_the_alt-right/",
+            "updateddate": "2017-03-02 16:42:49"
+        }
+    ]
 
 
 Installation
