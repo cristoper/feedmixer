@@ -111,8 +111,8 @@ unreliably available.
         }
     ]
 
-Non-featurs
------------
+Non-features
+------------
 FeedMixer does not (yet) do these things itself:
 
 - `Cache pruning <https://github.com/cristoper/feedmixer/issues/2>`_
