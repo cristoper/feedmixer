@@ -1,4 +1,4 @@
-git+git://github.com/cristoper/feedfetch.git#egg=feedfetch
+git+git://github.com/cristoper/shelfcache.git#egg=shelfcache
 git+git://github.com/cristoper/feedparser.git@no-independent-content-and-description-order#egg=feedparser
 feedgenerator
 falcon
