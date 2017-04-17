@@ -62,13 +62,18 @@ from typing import Type, List, Optional, Callable, Dict, Union
 # https://docs.djangoproject.com/en/1.10/_modules/django/utils/feedgenerator/
 import feedgenerator
 from feedgenerator import Rss201rev2Feed, Atom1Feed, SyndicationFeed
+
+import feedparser
 from feedparser.util import FeedParserDict
 
-from feedfetch import FeedCache
+from feedfetch.cache_get import cache_get
+from feedfetch.shelfcache import ShelfCache
 from urllib.error import URLError
+from requests.exceptions import RequestException
 
 # Types:
-FCException = Union[FeedCache.FetchError, FeedCache.ParseError, URLError]
+class ParseError(Exception): pass
+FCException = Union[RequestException, ParseError]
 error_dict_t = Dict[str, FCException]
 cacher_t = Callable[[str], FeedParserDict]
 
@@ -76,10 +81,10 @@ logger = logging.getLogger(__name__)
 
 
 class FeedMixer(object):
-    def __init__(self, title='Title', link='', desc='', feeds:
-                 List[Optional[str]]=[], num_keep=3, max_threads=5,
-                 max_feeds=100, cache_path='fmcache', cacher:
-                 Optional[cacher_t]=None) -> None:
+    def __init__(self, title='Title', link='', desc='',
+                 feeds: List[Optional[str]]=[], num_keep=3,
+                 max_threads=5, max_feeds=100, cache_path='fmcache',
+                 cache: Optional[ShelfCache]=None, cache_get=cache_get) -> None:
         """
         __init__(self, title, link='', desc='', feeds=[], num_keep=3, \
             max_thread=5, max_feeds=100, cache_path='fmcache')
@@ -93,8 +98,10 @@ class FeedMixer(object):
             max_threads: the maximum number of threads to spin up while fetching
             feeds
             max_feeds: the maximum number of feeds to fetch
+            cache: The ShelfCache instance to manage the cache. If not provided,
+                an instance will be created with `cache_path`
             cache_path: path where the cache database should be created
-            cacher: the method to use for caching/fetching feeds (this is
+            cache_get: the method to use for fetching remote feeds (this is
                 injectable for testing purposes)
         """
         self.title = title
@@ -106,10 +113,10 @@ class FeedMixer(object):
         self.max_threads = max_threads
         self._mixed_entries = []  # type: List[Optional[dict]]
         self._error_urls = {}  # type: error_dict_t
-        if cacher is None:
-            self.cacher = FeedCache(cache_path).fetch
-        else:
-            self.cacher = cacher
+        self.cache_get = cache_get
+        if cache is None:
+            cache = ShelfCache(db_path=cache_path, exp_seconds=300)
+        self.cache = cache
 
     @property
     def num_keep(self) -> int:
@@ -196,12 +203,25 @@ class FeedMixer(object):
         parsed_entries = []  # type: List[dict]
         self._error_urls = {}
         with ThreadPoolExecutor(max_workers=self.max_threads) as exec:
-            future_to_url = {exec.submit(self.cacher, url): url for url in
-                             self.feeds}
+            future_to_url = {exec.submit(self.cache_get, self.cache, url): url
+                             for url in self.feeds}
             for future in concurrent.futures.as_completed(future_to_url):
                 url = future_to_url[future]
                 try:
-                    f = future.result()
+                    resp = future.result()
+
+                    # parse response and check for parse errors
+                    f = feedparser.parse(resp.text)
+                    parse_err = len(f.get('entries')) == 0 and f.get('bozo')
+                    if f is None or parse_err:
+                        logger.info("Parse error ({})"
+                                    .format(f.get('bozo_exception')))
+                        raise ParseError("Parse error: {}"
+                                         .format(f.get('bozo_exception')))
+
+                    logger.info("Got feed from feedparser {}".format(url))
+                    logger.debug("Feed: {}".format(f))
+
                     if self._num_keep == -1:
                         newest = f.entries
                     else:
@@ -214,8 +234,7 @@ class FeedMixer(object):
                                 e['author_detail'] = f.feed.author_detail
                                 e.author_detail = f.feed.author_detail
                     parsed_entries += newest
-                except (FeedCache.FetchError, FeedCache.ParseError,
-                        URLError) as e:
+                except (ParseError, RequestException) as e:
                     self._error_urls[url] = e
                     logger.info("{} generated an exception: {}".format(url, e))
 
