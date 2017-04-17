@@ -3,3 +3,4 @@ git+git://github.com/cristoper/feedparser.git@no-independent-content-and-descrip
 feedgenerator
 falcon
 typing
+requests
