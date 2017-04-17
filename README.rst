@@ -111,11 +111,22 @@ unreliably available.
         }
     ]
 
+Database Pruning
+----------------
+The included ``prune_expired.py`` script can be used to prune old entries from
+the database (for example by running it from cron)::
+
+    >>>  /path/to/venv/bin/python3 prune_expired.py 'dbname.db' 1200
+
+The first argument is the path to the ShelfCache database file, and the second
+argument is the age threshold (in seconds), any entries older than which will
+be deleted.
+
 Non-features
 ------------
-FeedMixer does not (yet) do these things itself:
+FeedMixer does not (yet?) do these things itself, though finding or writing suitable
+WSGI middleware is one way to get them:
 
-- `Cache pruning <https://github.com/cristoper/feedmixer/issues/2>`_
 - Authentication
 - Rate limiting
 
