@@ -47,7 +47,7 @@ To set a timeout on network requests, do this in your app::
 >>> import socket
 >>> socket.setdefaulttimeout(TIMEOUT)
 
-.. _FeedCache: https://github.com/cristoper/feedfetch
+.. _FeedCache: https://github.com/cristoper/shelfcache
 
 Interface
 ---------
@@ -66,8 +66,8 @@ from feedgenerator import Rss201rev2Feed, Atom1Feed, SyndicationFeed
 import feedparser
 from feedparser.util import FeedParserDict
 
-from feedfetch.cache_get import cache_get
-from feedfetch.shelfcache import ShelfCache
+from shelfcache.cache_get import cache_get
+from shelfcache.shelfcache import ShelfCache
 from urllib.error import URLError
 from requests.exceptions import RequestException
 
