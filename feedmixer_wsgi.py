@@ -37,4 +37,4 @@ root_logger.addHandler(handler)
 TIMEOUT = 120  # time to wait for http requests (seconds)
 socket.setdefaulttimeout(TIMEOUT)
 
-api = application = wsgi_app()
+api = application = wsgi_app(exp_seconds=300)

@@ -51,6 +51,7 @@ Interface
 ---------
 """
 from feedmixer import FeedMixer
+from shelfcache import ShelfCache
 import falcon
 from typing import NamedTuple, List
 import json
@@ -84,19 +85,22 @@ class MixedFeed:
     """
     def __init__(self, ftype='atom', title='FeedMixer feed',
                  desc='{type} feed created by FeedMixer.',
-                 db_path='fmcache.db') -> None:
+                 db_path='fmcache.db', exp_seconds=300) -> None:
         """
         :param ftype: one of 'atom', 'rss', or 'json'
         :param title: the title of the generated feed
         :param desc: description of the generated feed (the '{type}' formatting
             parameter will be replaced by the value of `ftype`)
         :param db_path: the path where the cache database file should be created
+        :param exp_seconds: the default number of seconds to cache feeds before
+            re-validating. This can be overridden by a Cache-Control header from
+            the server.
         """
         super().__init__()
         self.ftype = ftype
         self.title = title
         self.desc = desc.format(type=ftype)
-        self.db_path = db_path
+        self.cache = ShelfCache(db_path=db_path, exp_seconds=exp_seconds)
 
     def on_get(self, req: falcon.Request, resp: falcon.Response) -> None:
         """
@@ -104,7 +108,7 @@ class MixedFeed:
         """
         feeds, n = parse_qs(req)
         fm = FeedMixer(feeds=feeds, num_keep=n, title=self.title,
-                       desc=self.desc, link=req.uri, cache_path=self.db_path)
+                       desc=self.desc, link=req.uri, cache=self.cache)
 
         # dynamically find and call appropriate method based on ftype:
         method_name = "{}_feed".format(self.ftype)
@@ -128,15 +132,18 @@ class MixedFeed:
 
 
 def wsgi_app(title='FeedMixer feed', desc='{type} feed created by FeedMixer.',
-             db_path='fmcache.db') -> falcon.API:
+             db_path='fmcache.db', exp_seconds=300) -> falcon.API:
     """
     Creates the Falcon api object (a WSGI-compliant callable)
 
     See `FeedMixer` docstring for parameter descriptions.
     """
-    atom = MixedFeed(ftype='atom', title=title, desc=desc, db_path=db_path)
-    rss = MixedFeed(ftype='rss', title=title, desc=desc, db_path=db_path)
-    jsn = MixedFeed(ftype='json', title=title, desc=desc, db_path=db_path)
+    atom = MixedFeed(ftype='atom', title=title, desc=desc, db_path=db_path,
+                     exp_seconds=exp_seconds)
+    rss = MixedFeed(ftype='rss', title=title, desc=desc, db_path=db_path,
+                    exp_seconds=exp_seconds)
+    jsn = MixedFeed(ftype='json', title=title, desc=desc, db_path=db_path,
+                    exp_seconds=exp_seconds)
 
     api = falcon.API()
     api.add_route('/atom', atom)
