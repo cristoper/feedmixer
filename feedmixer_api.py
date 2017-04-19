@@ -60,8 +60,6 @@ import urllib.parse
 ParsedQS = NamedTuple('ParsedQS', [('f', List[str]),
                                    ('n', int)])
 
-# Vars to config:
-
 
 def parse_qs(req: falcon.Request) -> ParsedQS:
     """
