@@ -80,6 +80,13 @@ cacher_t = Callable[[str], FeedParserDict]
 logger = logging.getLogger(__name__)
 
 
+def json_encode_date(obj):
+    if hasattr(obj, 'isoformat'):
+        return obj.isoformat()
+    else:
+        return str(obj)
+
+
 class FeedMixer(object):
     def __init__(self, title='Title', link='', desc='',
                  feeds: List[Optional[str]]=[], num_keep=3,
@@ -188,9 +195,7 @@ class FeedMixer(object):
             A JSON dict consisting of the `num_keep` most recent entries from
             each of the `feeds`.
         """
-        # (The default encoding lambda is so that we can handle datetime
-        # objects)
-        return json.dumps(self.mixed_entries, default=lambda o: str(o),
+        return json.dumps(self.mixed_entries, default=json_encode_date,
                           sort_keys=True)
 
     def __fetch_entries(self) -> None:
