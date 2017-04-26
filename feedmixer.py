@@ -82,7 +82,7 @@ logger = logging.getLogger(__name__)
 
 def json_encode_date(obj):
     if hasattr(obj, 'isoformat'):
-        return obj.isoformat()
+        return obj.isoformat()+'Z'
     else:
         return str(obj)
 
