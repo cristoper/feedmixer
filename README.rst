@@ -17,11 +17,11 @@ sensible defaults and a rotating logfile) as both `api` and `application`
 (default names used by common WSGI servers). To start the service with
 gunicorn_, for example, clone the repository and in the root directory run::
 
-$ gunicorn feedmixer.wsgi
+$ gunicorn feedmixer_wsgi
 
 Note that the top-level install directory must be writable by the server
 running the app, because it creates the logfiles ('fm.log' and 'fm.log.1') and
-its cache database ('fmcache') there.
+its cache database ('fmcache.db') there.
 
 
 .. _falcon: https://falconframework.org/
