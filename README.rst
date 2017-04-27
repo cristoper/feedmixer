@@ -66,8 +66,8 @@ unreliably available.
 
 `HTTPie <https://httpie.org/>`_ is a very nice command-line http client for testing RESTful services::
 
->>> pip3 install httpie
->>> http mretc.net/feedmixer/json f==http://hnrss.org/newest f==http://americancynic.net/atom.xml n==1
+$ pip3 install httpie
+$ http mretc.net/feedmixer/json f==http://hnrss.org/newest f==http://americancynic.net/atom.xml n==1
 
 .. code-block:: json
 
