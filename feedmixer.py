@@ -68,8 +68,8 @@ from feedparser.util import FeedParserDict
 
 from shelfcache.cache_get import cache_get
 from shelfcache.shelfcache import ShelfCache
-from urllib.error import URLError
 from requests.exceptions import RequestException
+
 
 # Types:
 class ParseError(Exception): pass
@@ -231,13 +231,17 @@ class FeedMixer(object):
                         newest = f.entries
                     else:
                         newest = f.entries[0:self._num_keep]
-                    # use feed author if individual entries are missing
-                    # author property
-                    if 'author_detail' in f.feed:
-                        for e in newest:
-                            if 'author_detail' not in e:
+
+                    for e in newest:
+                        e['feed_link'] = f.feed.link
+                        e['feed_title'] = f.feed.title
+                        if 'author_detail' not in e:
+                            # use feed author if individual entries are missing
+                            # author property
+                            if 'author_detail' in f.feed:
                                 e['author_detail'] = f.feed.author_detail
                                 e.author_detail = f.feed.author_detail
+
                     parsed_entries += newest
                 except (ParseError, RequestException) as e:
                     self._error_urls[url] = e
@@ -270,6 +274,10 @@ class FeedMixer(object):
                 metadata['author_name'] = e['author_detail'].get('name')
                 metadata['author_link'] = e['author_detail'].get('href')
 
+            # Keep original feed info (this is only serialized in the JSON feed)
+            metadata['feed_link'] = e['feed_link']
+            metadata['feed_title'] = e['feed_title']
+
             # convert time_struct tuples into datetime objects
             # (the min() prevents error in the off-chance that the
             # date contains a leap-second)
@@ -300,7 +308,7 @@ class FeedMixer(object):
             mixed_entries.append(metadata)
         return mixed_entries
 
-    def __generate_feed(self, gen_cls: Type[SyndicationFeed]) -> SyndicationFeed:
+    def __generate_feed(self, gen_cls: Type[SyndicationFeed])-> SyndicationFeed:
         """
         Generate a feed using one of the generator classes from the Django
         `feedgenerator` module.
