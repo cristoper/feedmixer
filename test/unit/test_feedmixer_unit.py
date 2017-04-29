@@ -206,6 +206,30 @@ class TestAtomFeed(unittest.TestCase):
         self.maxDiff = None
         self.assertIn(expected, af)
 
+    def test_atom_prefer_summary(self):
+        """
+        Test that passing prefer_summary=True will return the short 'summary'
+        """
+        expected = '''On the difference between democratic socialism and social democracy, the future of capitalism, and the socialist response to the Bernie Sanders presidential campaign.'''
+        mc = build_mock_cache_get()
+        cache = mock_shelfcache()
+        fm = FeedMixer(feeds=['atom'], cache_get=mc, num_keep=1,
+                       cache=cache, prefer_summary=True)
+        me = fm.mixed_entries[0]
+        self.assertEqual(me.get('description'), expected)
+
+    def test_atom_prefer_content(self):
+        """
+        Test that passing prefer_summary=False will ask the parser for the full
+        entry content.
+        """
+        mc = build_mock_cache_get()
+        cache = mock_shelfcache()
+        fm = FeedMixer(feeds=['atom'], cache_get=mc, num_keep=1,
+                       cache=cache, prefer_summary=False)
+        me = fm.mixed_entries[0]
+        self.assertTrue(len(me.get('description')) > 1000)
+
 
 class TestRSSFeed(unittest.TestCase):
     def test_rss_feed(self):
