@@ -89,7 +89,7 @@ def json_encode_date(obj):
 
 class FeedMixer(object):
     def __init__(self, title='Title', link='', desc='',
-                 feeds: List[Optional[str]]=[], num_keep=3,
+                 feeds: List[Optional[str]]=[], num_keep=3, prefer_summary=True,
                  max_threads=5, max_feeds=100, cache_path='fmcache',
                  cache: Optional[ShelfCache]=None, cache_get=cache_get) -> None:
         """
@@ -102,6 +102,8 @@ class FeedMixer(object):
             desc: the description of the generated feed
             feeds: the list of feed URLs to fetch and mix
             num_keep: the number of entries to keep from each member of `feeds`
+            prefer_summary: If True, prefer the (short) 'summary'; otherwise
+                prefer the (long) feed 'content'.
             max_threads: the maximum number of threads to spin up while fetching
             feeds
             max_feeds: the maximum number of feeds to fetch
@@ -117,6 +119,7 @@ class FeedMixer(object):
         self.max_feeds = max_feeds
         self._feeds = feeds[:max_feeds]
         self._num_keep = num_keep
+        self.prefer_summary = prefer_summary
         self.max_threads = max_threads
         self._mixed_entries = []  # type: List[Optional[dict]]
         self._error_urls = {}  # type: error_dict_t
@@ -251,14 +254,20 @@ class FeedMixer(object):
         parsed_entries.sort(key=lambda e: e['published'], reverse=True)
 
         # extract metadata into a form usable by feedgenerator
-        mixed_entries = self.extract_meta(parsed_entries)
+        mixed_entries = self.extract_meta(parsed_entries, self.prefer_summary)
         self._mixed_entries = mixed_entries
 
     @staticmethod
-    def extract_meta(parsed_entries: List[dict]) -> List[dict]:
+    def extract_meta(parsed_entries: List[dict],
+                     prefer_summary=True) -> List[dict]:
         """
         Convert a FeedParserDict object into a dict compatible with the Django
         feedgenerator classes.
+
+        Args:
+            parsed_entries: List of entries from which to extract meta data.
+            prefer_summary: If True, prefer the (short) 'summary'; otherwise
+                prefer the (long) 'content'.
         """
         mixed_entries = []
         for e in parsed_entries:
@@ -267,7 +276,19 @@ class FeedMixer(object):
             # title, link, and description are mandatory
             metadata['title'] = e.get('title', '')
             metadata['link'] = e.get('link', '')
-            metadata['description'] = e.get('description', '')
+
+            summary = e.get('summary')
+            content = e.get('content')
+            if content:
+                # atom feeds can have several content tags, each with a
+                # different type. We just use the first one.
+                content = content[0].get('value')
+            if prefer_summary:
+                print('pref')
+                content = summary or content
+            else:
+                content = content or summary
+            metadata['description'] = content
 
             if 'author_detail' in e:
                 metadata['author_email'] = e['author_detail'].get('email')

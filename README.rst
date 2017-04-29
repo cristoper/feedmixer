@@ -43,6 +43,9 @@ f
 n
     The number of entries to keep from each field (pass -1 to keep all entries, which is the default if no `n` field is provided).
 
+full
+    If set, prefer the full entry `content`; otherwise prefer the shorter entry `summary`.
+
 
 As an example, assuming an instance of the FeedMixer app is running on the localhost on port 8000, let's fetch the newest entry each from the following Atom and RSS feeds:
 

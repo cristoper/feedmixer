@@ -29,6 +29,10 @@ n
     The number of entries to keep from each field (pass -1 to keep all entries,
     which is the default if no `n` field is provided).
 
+full
+    If set, prefer the full entry `content`; otherwise prefer the shorter entry
+    `summary`.
+
 
 As an example, assuming an instance of the FeedMixer app is running on the
 localhost on port 8000, let's fetch the newest entry each from the following
@@ -59,7 +63,8 @@ import urllib
 import urllib.parse
 
 ParsedQS = NamedTuple('ParsedQS', [('f', List[str]),
-                                   ('n', int)])
+                                   ('n', int),
+                                   ('full', bool)])
 
 
 def parse_qs(req: falcon.Request) -> ParsedQS:
@@ -71,8 +76,9 @@ def parse_qs(req: falcon.Request) -> ParsedQS:
     qs = falcon.uri.parse_query_string(req.query_string)
     feeds = qs.get('f', [])
     n = qs.get('n', -1)
+    full = qs.get('full', False)
     if not isinstance(feeds, list): feeds = [feeds] # NOQA
-    return ParsedQS(feeds, int(n))
+    return ParsedQS(feeds, int(n), bool(full))
 
 
 class MixedFeed:
@@ -106,9 +112,11 @@ class MixedFeed:
         """
         Falcon GET handler.
         """
-        feeds, n = parse_qs(req)
-        fm = FeedMixer(feeds=feeds, num_keep=n, title=self.title,
-                       desc=self.desc, link=req.uri, cache=self.cache)
+        feeds, n, full = parse_qs(req)
+        summ = not full
+        fm = FeedMixer(feeds=feeds, num_keep=n, prefer_summary=summ,
+                       title=self.title, desc=self.desc, link=req.uri,
+                       cache=self.cache)
 
         # dynamically find and call appropriate method based on ftype:
         method_name = "{}_feed".format(self.ftype)
