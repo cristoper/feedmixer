@@ -121,7 +121,7 @@ the database (for example by running it from cron)::
 
     >>>  /path/to/venv/bin/python3 prune_expired.py 'dbname.db' 1200
 
-The first argument is the path to the ShelfCache database file, and the second
+The first argument is the path to the `ShelfCache <https://github.com/cristoper/shelfcache>`_ database file, and the second
 argument is the age threshold (in seconds), any entries older than which will
 be deleted.
 
