@@ -284,7 +284,6 @@ class FeedMixer(object):
                 # different type. We just use the first one.
                 content = content[0].get('value')
             if prefer_summary:
-                print('pref')
                 content = summary or content
             else:
                 content = content or summary
