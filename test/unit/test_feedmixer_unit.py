@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import MagicMock, call
+from unittest.mock import MagicMock, call, ANY
 import feedparser
 from feedmixer import FeedMixer, ParseError
 from requests.exceptions import RequestException
@@ -30,7 +30,7 @@ def mock_shelfcache(return_value=None):
 
 
 def build_mock_cache_get():
-    def mock_fetch(cache, url):
+    def mock_fetch(cache, url, **kwargs):
         """Mimics the cache_get() method"""
         if url == "atom":
             resp = MagicMock()
@@ -68,7 +68,7 @@ class TestMixedEntries(unittest.TestCase):
         fm = FeedMixer(feeds=['atom'], cache_get=mc, num_keep=2,
                        cache=cache)
         me = fm.mixed_entries
-        mc.assert_called_once_with(cache, 'atom')
+        mc.assert_called_once_with(cache, 'atom', headers=ANY)
         self.assertEqual(len(me), 2)
 
     def test_multi_good(self):
@@ -80,8 +80,9 @@ class TestMixedEntries(unittest.TestCase):
         fm = FeedMixer(feeds=['atom', 'rss', 'atom'], cache_get=mc, num_keep=2,
                        cache=cache)
         me = fm.mixed_entries
-        mc.assert_has_calls([call(cache, 'atom'), call(cache, 'rss'),
-                             call(cache, 'atom')], any_order=True)
+        mc.assert_has_calls([call(cache, 'atom', headers=ANY),
+                             call(cache, 'rss', headers=ANY),
+                             call(cache, 'atom',headers=ANY)], any_order=True)
         self.assertEqual(len(me), 6)
 
     def test_single_exception(self):
@@ -104,7 +105,9 @@ class TestMixedEntries(unittest.TestCase):
         fm = FeedMixer(feeds=['fetcherror', 'parseerror'],
                        cache_get=mc, num_keep=2, cache=cache)
         me = fm.mixed_entries
-        mc.assert_has_calls([call(cache, 'fetcherror'), call(cache, 'parseerror')], any_order=True)
+        mc.assert_has_calls([call(cache, 'fetcherror', headers=ANY),
+                             call(cache, 'parseerror', headers=ANY)],
+                            any_order=True)
         self.assertEqual(len(me), 0)
         self.assertIsInstance(fm.error_urls['fetcherror'], RequestException)
         self.assertIsInstance(fm.error_urls['parseerror'], ParseError)
@@ -119,8 +122,10 @@ class TestMixedEntries(unittest.TestCase):
         fm = FeedMixer(feeds=['fetcherror', 'atom', 'rss', 'parseerror'],
                        cache_get=mc, num_keep=2, cache=cache)
         me = fm.mixed_entries
-        mc.assert_has_calls([call(cache, 'fetcherror'), call(cache, 'atom'),
-                             call(cache, 'rss'), call(cache, 'parseerror')],
+        mc.assert_has_calls([call(cache, 'fetcherror', headers=ANY),
+                             call(cache, 'atom', headers=ANY),
+                             call(cache, 'rss', headers=ANY),
+                             call(cache, 'parseerror', headers=ANY)],
                             any_order=True)
         self.assertEqual(len(me), 4)
         self.assertEqual(len(fm.error_urls.keys()), 2)
@@ -159,7 +164,7 @@ class TestMixedEntries(unittest.TestCase):
         fm = FeedMixer(feeds=['atom'], cache_get=mc, num_keep=1,
                        cache=cache)
         me = fm.mixed_entries
-        mc.assert_called_once_with(cache, 'atom')
+        mc.assert_called_once_with(cache, 'atom', headers=ANY)
         self.assertIn('author_name', me[0])
 
 

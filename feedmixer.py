@@ -68,6 +68,7 @@ from feedparser.util import FeedParserDict
 
 from shelfcache.cache_get import cache_get
 from shelfcache.shelfcache import ShelfCache
+import requests.utils
 from requests.exceptions import RequestException
 
 
@@ -127,6 +128,12 @@ class FeedMixer(object):
         if cache is None:
             cache = ShelfCache(db_path=cache_path, exp_seconds=300)
         self.cache = cache
+
+        headers = requests.utils.default_headers()
+        headers.update({
+            'User-Agent': 'feedmixer (github.com/cristoper/feedmixer)'
+        })
+        self.headers = headers
 
     @property
     def num_keep(self) -> int:
@@ -211,8 +218,9 @@ class FeedMixer(object):
         parsed_entries = []  # type: List[dict]
         self._error_urls = {}
         with ThreadPoolExecutor(max_workers=self.max_threads) as exec:
-            future_to_url = {exec.submit(self.cache_get, self.cache, url): url
-                             for url in self.feeds}
+            future_to_url = {exec.submit(self.cache_get, self.cache, url,
+                                         headers=self.headers):
+                             url for url in self.feeds}
             for future in concurrent.futures.as_completed(future_to_url):
                 url = future_to_url[future]
                 try:
