@@ -135,7 +135,11 @@ class MixedFeed:
             json_err = urllib.parse.quote(json.dumps(error_dict))
             resp.append_header('X-fm-errors', json_err)
 
-        resp.content_type = "application/{}".format(self.ftype)
+        if self.ftype == 'json':
+            # special case content_type for JSON
+            resp.content_type = "application/json"
+        else:
+            resp.content_type = "application/{}+xml".format(self.ftype)
         resp.status = falcon.HTTP_200
 
 
