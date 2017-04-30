@@ -258,8 +258,9 @@ class FeedMixer(object):
                     self._error_urls[url] = e
                     logger.info("{} generated an exception: {}".format(url, e))
 
-        # sort entries by published date
-        parsed_entries.sort(key=lambda e: e['published'], reverse=True)
+        # sort entries by published date (with fall back to updated date)
+        parsed_entries.sort(key=lambda e: e.get('published') or e.get('updated'),
+                            reverse=True)
 
         # extract metadata into a form usable by feedgenerator
         mixed_entries = self.extract_meta(parsed_entries, self.prefer_summary)
