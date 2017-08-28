@@ -51,6 +51,7 @@ def application(environ, start_response):
     handler.setLevel(LOG_LEVEL)
     root_logger = logging.getLogger()
     root_logger.setLevel(LOG_LEVEL)
+    root_logger.handlers = []
     root_logger.addHandler(handler)
 
     # setup and return actual app:
