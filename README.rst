@@ -174,7 +174,7 @@ This is how I've deployed FeedMixer with Apache and mod_wsgi_ (on Debian):
 	Header set Access-Control-Allow-Origin "*"
     </Directory>
 
-The main things to note are the ``pythong-home`` (set to the virtualenv directory), ``python-path``, and ``home`` options to the ``WSGIDaemonProcess``.
+The main things to note are the ``python-home`` (set to the virtualenv directory), ``python-path``, and ``home`` options to the ``WSGIDaemonProcess``.
 
 Also note the CORS header in the Directory directive which allows the feed to
 be fetched by JavaScript clients from any domain (this require ``mod_headers``
