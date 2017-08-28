@@ -169,7 +169,7 @@ This is how I've deployed FeedMixer with Apache and mod_wsgi_ (on Debian):
     WSGIProcessGroup feedmixer
     WSGIApplicationGroup %{GLOBAL}
     WSGIScriptAlias /feedmixer /usr/lib/wsgi-bin/fm/feedmixer_wsgi.py
-    <Directory "/usr/lib/wsgi-bin">
+    <Directory "/usr/lib/wsgi-bin/fm">
 	Require all granted
 	Header set Access-Control-Allow-Origin "*"
     </Directory>
