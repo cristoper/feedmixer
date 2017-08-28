@@ -1,6 +1,6 @@
 """
 This module instantiates the feedmixer WSGI object with sensible defaults and a
-rotating logfiel as both `api` and `application` (default names used by common
+rotating logfile as both `api` and `application` (default names used by common
 WSGI servers). To start the service with gunicorn_, for example, clone the
 repository and in the root directory run::
 
