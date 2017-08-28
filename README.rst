@@ -162,7 +162,7 @@ This is how I've deployed FeedMixer with Apache and mod_wsgi_ (on Debian):
 
 .. code-block:: apache
 
-    WSGIDaemonProcess feedmixer processes=1 threads=10 \
+    WSGIDaemonProcess feedmixer threads=10 \
 	python-home=/usr/lib/wsgi-bin/feedmixer/venv \
 	python-path=/usr/lib/wsgi-bin/feedmixer \
 	home=/usr/lib/wsgi-bin/feedmixer
@@ -175,6 +175,8 @@ This is how I've deployed FeedMixer with Apache and mod_wsgi_ (on Debian):
     </Directory>
 
 The main things to note are the ``python-home`` (set to the virtualenv directory), ``python-path``, and ``home`` options to the ``WSGIDaemonProcess``.
+
+As configured above, Apache will run the WSGI app in a single process, handling concurrent requests on up to 10 threads. It is also possible to pass the ``processes=N`` directive to ``WSGIDaemonProcess`` in order to run the app in N processes. If ``feedmixer_wsgi.py`` detects that the WSGI server is running it in multiple processes, it will log to syslog instead of to a file.
 
 Also note the CORS header in the Directory directive which allows the feed to
 be fetched by JavaScript clients from any domain (this requires ``mod_headers``

@@ -1,8 +1,9 @@
 """
 This module instantiates the feedmixer WSGI object with sensible defaults and a
-rotating logfile as both `api` and `application` (default names used by common
-WSGI servers). To start the service with gunicorn_, for example, clone the
-repository and in the root directory run::
+rotating logfile (or to syslog if running multiprocess) as both `api` and
+`application` (default names used by common WSGI servers). To start the service
+with gunicorn_, for example, clone the repository and in the root directory
+run::
 
 $ gunicorn feedmixer_wsgi
 
@@ -19,22 +20,45 @@ from feedmixer_api import wsgi_app
 import socket
 import logging
 import logging.handlers
+import multiprocessing
+import os
+
 
 LOG_PATH = 'fm.log'
 LOG_LEVEL = logging.INFO
 
-# Setup root logger to log to rotating log file
-handler = logging.handlers.RotatingFileHandler(LOG_PATH, maxBytes=100000,
-                                               backupCount=1)
-formatter = logging.Formatter('%(asctime)s %(levelname)s:%(message)s')
-handler.setFormatter(formatter)
-handler.setLevel(LOG_LEVEL)
-root_logger = logging.getLogger()
-root_logger.setLevel(LOG_LEVEL)
-root_logger.addHandler(handler)
+
 
 
 TIMEOUT = 120  # time to wait for http requests (seconds)
 socket.setdefaulttimeout(TIMEOUT)
 
-api = application = wsgi_app(exp_seconds=300)
+def application(environ, start_response):
+    """
+    Wrap the main WSGI app so that we can intercept the 'wsgi.multiprocess'
+    environment variable to set up logging accordingly.
+    """
+    pid = multiprocessing.current_process().pid
+
+    is_multiprocess = environ.get('wsgi.multiprocess', False)
+    if is_multiprocess:
+        # log to the syslog daemon
+        handler = logging.handlers.SysLogHandler(address='/dev/log')
+    else:
+        # Setup root logger to log to rotating log file
+        handler = logging.handlers.RotatingFileHandler(LOG_PATH, maxBytes=100000,
+					               backupCount=1)
+    format_str = "fm-%(name)s-" + "%d" % pid +": "
+    format_str += "%(asctime)s %(levelname)s:%(message)s"
+    formatter = logging.Formatter(format_str)
+    handler.setFormatter(formatter)
+    handler.setLevel(LOG_LEVEL)
+    root_logger = logging.getLogger()
+    root_logger.setLevel(LOG_LEVEL)
+    root_logger.addHandler(handler)
+
+    # setup and return actual app:
+    api = wsgi_app(exp_seconds=300)
+    return api(environ, start_response)
+
+api = application
