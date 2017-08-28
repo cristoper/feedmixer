@@ -26,10 +26,6 @@ import os
 
 LOG_PATH = 'fm.log'
 LOG_LEVEL = logging.INFO
-
-
-
-
 TIMEOUT = 120  # time to wait for http requests (seconds)
 socket.setdefaulttimeout(TIMEOUT)
 
