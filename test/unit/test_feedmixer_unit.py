@@ -5,7 +5,6 @@ from feedmixer import FeedMixer, ParseError
 import requests
 from requests.exceptions import RequestException
 from shelfcache import shelfcache
-import datetime as dt
 
 
 ATOM_PATH = 'test/test_atom.xml'
@@ -257,6 +256,27 @@ class TestMixedEntriesCache(unittest.TestCase):
         # Asserts:
         self.assertEqual(len(me), len(fresh.entries))
         cache.replace_data.assert_called_once_with(key=url, data=ANY)
+
+    def test_saves_headers(self):
+        """
+        Make sure headers are stored with cached feed. Tests regression fixed
+        with 2ee4bc9c245229d564d4b14e7d76ae5879f6eeae
+        """
+        # Setup:
+        url = 'atom'
+        resp = build_response()
+        mc = MagicMock(return_value=resp)
+        headers = resp.headers
+        mock_result = shelfcache.CacheResult(data=resp, expired=True)
+        cache = mock_shelfcache(return_value=mock_result)
+
+        # DUT:
+        fm = FeedMixer(feeds=[url], cache_get=mc, cache=cache, num_keep=-1)
+        fm.mixed_entries
+
+        # Asserts:
+        saved_headers = cache.replace_data.call_args[1]['data'].headers
+        self.assertEqual(headers, saved_headers)
 
 
 class TestFeed(unittest.TestCase):
