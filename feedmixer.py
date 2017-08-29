@@ -66,8 +66,8 @@ from feedgenerator import Rss201rev2Feed, Atom1Feed, SyndicationFeed
 import feedparser
 from feedparser.util import FeedParserDict
 
-from shelfcache.cache_get import cache_get
-from shelfcache.shelfcache import ShelfCache
+from shelfcache import cache_get
+from shelfcache import ShelfCache
 import requests.utils
 from requests.exceptions import RequestException
 
