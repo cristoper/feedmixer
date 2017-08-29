@@ -242,7 +242,10 @@ class FeedMixer(object):
                         logger.info("Got feed from feedparser {}".format(url))
                         logger.debug("Feed: {}".format(f))
 
-                        # Replace HTTP object with FeedParserDict object:
+                        # Replace HTTP object with FeedParserDict object,
+                        # but we must save the headers so we can send
+                        # etag/if-modified-since to server on re-fresh
+                        f.headers = resp.headers
                         self.cache.replace_data(key=url, data=f)
 
                     else:
