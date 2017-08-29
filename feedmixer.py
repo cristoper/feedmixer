@@ -226,17 +226,28 @@ class FeedMixer(object):
                 try:
                     resp = future.result()
 
+                    # If this is an HTTP response, replace its cached data with
+                    # a feedparser item (so that next time it is gotten from
+                    # the cache, we don't have to parse it again).
                     # parse response and check for parse errors
-                    f = feedparser.parse(resp.text)
-                    parse_err = len(f.get('entries')) == 0 and f.get('bozo')
-                    if f is None or parse_err:
-                        logger.info("Parse error ({})"
-                                    .format(f.get('bozo_exception')))
-                        raise ParseError("Parse error: {}"
-                                         .format(f.get('bozo_exception')))
+                    if not isinstance(resp, FeedParserDict):
+                        f = feedparser.parse(resp.text)
+                        parse_err = len(f.get('entries')) == 0 and f.get('bozo')
+                        if f is None or parse_err:
+                            logger.info("Parse error ({})"
+                                        .format(f.get('bozo_exception')))
+                            raise ParseError("Parse error: {}"
+                                             .format(f.get('bozo_exception')))
 
-                    logger.info("Got feed from feedparser {}".format(url))
-                    logger.debug("Feed: {}".format(f))
+                        logger.info("Got feed from feedparser {}".format(url))
+                        logger.debug("Feed: {}".format(f))
+
+                        # Replace HTTP object with FeedParserDict object:
+                        self.cache.replace_data(key=url, data=f)
+
+                    else:
+                        logger.info("Got parsed FeedParserDict from cache; using it.")
+                        f = resp
 
                     if self._num_keep == -1:
                         newest = f.entries

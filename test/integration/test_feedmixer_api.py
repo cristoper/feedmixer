@@ -23,7 +23,8 @@ class FMTestCase(testing.TestCase):
         self.app = feedmixer_api.wsgi_app(db_path=TESTDB)
 
     def tearDown(self):
-        os.remove(TESTDB)
+        if os.path.exists(TESTDB):
+            os.remove(TESTDB)
 
     def get_results_errors(self, path='/', qs=''):
         """

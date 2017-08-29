@@ -2,12 +2,16 @@ import unittest
 from unittest.mock import MagicMock, call, ANY
 import feedparser
 from feedmixer import FeedMixer, ParseError
+import requests
 from requests.exceptions import RequestException
+from shelfcache import shelfcache
+import datetime as dt
 
 
 ATOM_PATH = 'test/test_atom.xml'
 RSS_PATH = 'test/test_rss2.xml'
 
+OK = 200
 
 with open(ATOM_PATH, 'r') as f:
     TEST_ATOM = ''.join(f.readlines())
@@ -28,6 +32,24 @@ def mock_shelfcache(return_value=None):
     mock_shelf.get = mock_get
     return mock_shelf
 
+def build_response(status=OK, etag='etag', modified='modified', max_age=None):
+    """Make a requests.Response object suitable for testing.
+    Args:
+        status: HTTP status
+        exp-time: cache expire time (set to future for fresh cache, past for
+            stale cache (defaults to stale))
+        etag: etag cache-control header
+        modified: last-modified cache-control header
+    Returns:
+        A Response instance populated according to the arguments.
+    """
+    headers = {'last-modified': modified, 'etag': etag, 'Cache-Control':
+               'max-age={}'.format(max_age)}
+    test_response = requests.Response()
+    test_response.status_code = status
+    test_response.headers = headers
+    return test_response
+
 
 def build_mock_cache_get():
     def mock_fetch(cache, url, **kwargs):
@@ -40,13 +62,15 @@ def build_mock_cache_get():
             raise RequestException("fetch error")
         elif url == "parseerror":
             raise ParseError("parse error")
-        else:
-            # url == "rss"
+        elif url == "rss":
             resp = MagicMock()
             resp.text = TEST_RSS
             return resp
+        else:
+            resp = MagicMock(spec=requests.Response)
+            resp.text = url
+            return resp
     return MagicMock(side_effect=mock_fetch)
-
 
 class TestMixedEntries(unittest.TestCase):
     def test_empty(self):
@@ -166,6 +190,73 @@ class TestMixedEntries(unittest.TestCase):
         me = fm.mixed_entries
         mc.assert_called_once_with(cache, 'atom', headers=ANY)
         self.assertIn('author_name', me[0])
+
+
+class TestMixedEntriesCache(unittest.TestCase):
+    """
+    Test that __fetch_entries() correctly replaces response object with
+    FeedParserDict for caching.
+    """
+    def test_fresh_response(self):
+        """
+        cache_get() has returned a requests.Response object from the requests
+        library. Ensure it gets cached as a FeedParserDict.
+        """
+        # Setup:
+        url = 'atom'
+        mc = build_mock_cache_get()
+        fresh = build_response()
+        mock_result = shelfcache.CacheResult(data=fresh, expired=False)
+        cache = mock_shelfcache(return_value=mock_result)
+
+        # DUT:
+        fm = FeedMixer(feeds=[url], cache_get=mc, cache=cache)
+        fm.mixed_entries
+
+        # Asserts:
+        cache.replace_data.assert_called_once_with(key=url, data=ANY)
+
+    def test_fresh_parsed(self):
+        """
+        cache_get() has returned a fresh FeedParserDict object. Ensure we return it.
+        """
+        # Setup:
+        url = 'atom'
+        fresh = feedparser.parse(TEST_ATOM)
+        def mock_get(*args, **kwargs):
+            return fresh
+        mc = MagicMock(side_effect=mock_get)
+        mock_result = shelfcache.CacheResult(data=fresh, expired=False)
+        cache = mock_shelfcache(return_value=mock_result)
+
+        # DUT:
+        fm = FeedMixer(feeds=[url], cache_get=mc, cache=cache, num_keep=-1)
+        me = fm.mixed_entries
+
+        # Asserts:
+        self.assertEqual(len(me), len(fresh.entries))
+        cache.create_or_update.assert_not_called()
+
+    def test_stale_parsed(self):
+        """
+        cache_get() has returned a stale FeedParserDict object. Ensure we
+        re-fetch, parse, and cache it.
+        """
+        # Setup:
+        url = 'atom'
+        mc = build_mock_cache_get()
+        stale = build_response(status=304)
+        fresh = feedparser.parse(TEST_ATOM)
+        mock_result = shelfcache.CacheResult(data=stale, expired=True)
+        cache = mock_shelfcache(return_value=mock_result)
+
+        # DUT:
+        fm = FeedMixer(feeds=[url], cache_get=mc, cache=cache, num_keep=-1)
+        me = fm.mixed_entries
+
+        # Asserts:
+        self.assertEqual(len(me), len(fresh.entries))
+        cache.replace_data.assert_called_once_with(key=url, data=ANY)
 
 
 class TestFeed(unittest.TestCase):
