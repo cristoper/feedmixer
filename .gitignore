@@ -1,4 +1,5 @@
 *.sw[po]
+*.pyc
 __pycache__
 fmcache.db
 fmcache
