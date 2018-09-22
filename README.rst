@@ -164,6 +164,13 @@ to be enabled). Restrict (or remove) as your application requires.
 
 .. _mod_wsgi: https://modwsgi.readthedocs.io/en/develop/
 
+Troubleshooting
+---------------
+
+Using the provided `feedmixer_wsgi.py` application, information and errors are logged to the file `fm.log` in the directory the application is started from (auto rotated with a single old log called `fm.1.log`).
+
+Any errors encountered in fetching and parsing remote feeds are reported in a custom HTTP header called `X-fm-errors`.
+
 Database Pruning
 ----------------
 The included ``prune_expired.py`` script can be used to prune old entries from
