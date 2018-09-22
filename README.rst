@@ -212,12 +212,14 @@ Get help
 
 Feel free to open an issue on Github for help: https://github.com/cristoper/feedmixer/issues
 
+
 Support the project
 -------------------
 
-If this package was useful to you, please consider supporting my work on this and other open-source projects by making a small (like a tip) one-time donation: `donate via PayPal <https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=E78W4LH2NADXE>`_
+If this package was useful to you, please consider supporting my work on this and other open-source projects by making a small (like a tip) one-time donation: `donate via PayPal <https://www.paypal.me/cristoper/5>`_
 
-If you're looking to contract a Python developer, I might be able to help. Contact me, Chris, at dev@orangenoiseproduction.com
+If you're looking to contract a Python developer, I might be able to help. Contact me at chris.burkhardt@orangenoiseproduction.com
+
 
 License
 -------
