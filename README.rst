@@ -80,7 +80,7 @@ $ curl 'localhost:8000/atom?f=http%3A%2F%2Fmretc.net%2Fshaarli%2F%3Fdo%3Datom&f=
 `HTTPie <https://httpie.org/>`_ is a nice command-line http client that makes testing RESTful services more pleasant::
 
 $ pip3 install httpie
-$ http mretc.net/feedmixer/json f==http://hnrss.org/newest f==http://americancynic.net/atom.xml n==1
+$ http localhost:8000/json f==http://hnrss.org/newest f==http://americancynic.net/atom.xml n==1
 
 .. code-block:: json
 
