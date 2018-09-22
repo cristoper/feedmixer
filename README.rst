@@ -66,16 +66,16 @@ its cache database ('fmcache.db') there.
 
 As an example, assuming an instance of the FeedMixer app is running on the localhost on port 8000, let's fetch the newest entry each from the following Atom and RSS feeds:
 
-- http://mretc.net/shaarli/?do=atom
+- https://americancynic.net/shaarli/?do=atom
 - https://hnrss.org/newest
 
 The constructed URL to GET is:
 
-``http://localhost:8000/atom?f=http://mretc.net/shaarli/?do=atom&f=https://hnrss.org/newest&n=1``
+``http://localhost:8000/atom?f=https://americancynic.net/shaarli/?do=atom&f=https://hnrss.org/newest&n=1``
 
 Entering it into a browser will return an Atom feed with two entries. To GET it from a client programatically, remember to URL-encode the `f` fields::
 
-$ curl 'localhost:8000/atom?f=http%3A%2F%2Fmretc.net%2Fshaarli%2F%3Fdo%3Datom&f=https%3A%2F%2Fhnrss.org%2Fnewest&n=1'
+$ curl 'localhost:8000/atom?f=https%3A%2F%2Famericancynic.net%2Fshaarli%2F%3Fdo%3Datom&f=https%3A%2F%2Fhnrss.org%2Fnewest&n=1'
 
 `HTTPie <https://httpie.org/>`_ is a nice command-line http client that makes testing RESTful services more pleasant::
 
