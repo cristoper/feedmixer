@@ -1,41 +1,19 @@
 FeedMixer
 =========
-FeedMixer is a WSGI (Python3) micro web service which takes a list of feed URLs
-and returns a new feed consisting of the most recent `n` entries from each
+FeedMixer is a tiny WSGI (Python3) micro service which takes a list of feed
+URLs and returns a new feed consisting of the most recent `n` entries from each
 given feed.
 
-The project consists of three modules:
 
-- ``feedmixer.py`` - contains the core logic
-- ``feedmixer_api.py`` - contains the Falcon_-based API. Call ``wsgi_app()`` to
-  get a WSGI-compliant object to host.
-- ``feedmixer_wsgi.py`` - contains an actual WSGI application which can be used
-  as-is or as a template to customize.
-
-The feedmixer_wsgi module instantiates the feedmixer WSGI object (with
-sensible defaults and a rotating logfile) as both `api` and `application`
-(default names used by common WSGI servers). To start the service with
-gunicorn_, for example, clone the repository and in the root directory run::
-
-$ gunicorn feedmixer_wsgi
-
-Note that the top-level install directory must be writable by the server
-running the app, because it creates the logfiles ('fm.log' and 'fm.log.1') and
-its cache database ('fmcache.db') there.
-
-
-.. _falcon: https://falconframework.org/
-.. _gunicorn: http://gunicorn.org/
-
-Usage
------
+API
+---
 FeedMixer exposes three endpoints:
 
 - /atom
 - /rss
 - /json
 
-When sent a GET request they return an Atom, an RSS2, or a JSON feed, respectively. The query string of the GET request can contain two fields:
+When sent a GET request they return an Atom, an RSS 2.0, or a JSON feed, respectively. The query string of the GET request can contain these fields:
 
 f
     A url-encoded URL of a feed (any version of Atom or RSS). To include multiple feeds, simply include multiple `f` fields.
@@ -46,6 +24,45 @@ n
 full
     If set, prefer the full entry `content`; otherwise prefer the shorter entry `summary`.
 
+
+Installation
+------------
+
+#. Clone this repository:
+   ``$ git clone https://github.com/cristoper/feedmixer.git``
+#. ``$ cd feedmixer``
+#. Optional, but I recommend creating a `virtual environment`_:
+
+   a. ``$ virtualenv venv`` or ``$ python3 -m venv venv``
+   b. ``$ source venv/bin/activate``
+
+#. Install dependencies: ``$ pip3 install -r requirements.txt``
+
+The project consists of three modules:
+
+- ``feedmixer.py`` - contains the core logic
+- ``feedmixer_api.py`` - contains the Falcon_-based API. Call ``wsgi_app()`` to
+  get a WSGI-compliant object to host.
+- ``feedmixer_wsgi.py`` - contains an actual WSGI application which can be used
+  as-is or as a template to customize.
+
+.. _falcon: https://falconframework.org/
+.. _gunicorn: http://gunicorn.org/
+.. _`virtual environment`: https://virtualenv.pypa.io/en/stable/
+
+Run Locally
+~~~~~~~~~~~
+
+The feedmixer_wsgi module instantiates the feedmixer WSGI object (with sensible
+defaults and a rotating logfile) as both `api` and `application` (default names
+used by common WSGI servers). To start the service with gunicorn_, for example,
+clone the repository and in the root directory run::
+
+$ gunicorn feedmixer_wsgi
+
+Note that the top-level install directory must be writable by the server
+running the app, because it creates the logfiles ('fm.log' and 'fm.log.1') and
+its cache database ('fmcache.db') there.
 
 As an example, assuming an instance of the FeedMixer app is running on the localhost on port 8000, let's fetch the newest entry each from the following Atom and RSS feeds:
 
@@ -60,14 +77,7 @@ Entering it into a browser will return an Atom feed with two entries. To GET it 
 
 $ curl 'localhost:8000/atom?f=http%3A%2F%2Fmretc.net%2Fshaarli%2F%3Fdo%3Datom&f=https%3A%2F%2Fhnrss.org%2Fnewest&n=1'
 
-Public Demo
------------
-
-An instance of FeedMixer is running at ``http://mretc.net/feedmixer`` to play
-with. It is for demonstration purposes only and may be rate-limited and
-unreliably available.
-
-`HTTPie <https://httpie.org/>`_ is a very nice command-line http client for testing RESTful services::
+`HTTPie <https://httpie.org/>`_ is a nice command-line http client that makes testing RESTful services more pleasant::
 
 $ pip3 install httpie
 $ http mretc.net/feedmixer/json f==http://hnrss.org/newest f==http://americancynic.net/atom.xml n==1
@@ -114,44 +124,14 @@ $ http mretc.net/feedmixer/json f==http://hnrss.org/newest f==http://americancyn
         }
     ]
 
-Database Pruning
-----------------
-The included ``prune_expired.py`` script can be used to prune old entries from
-the database (for example by running it from cron)::
+Deploy
+~~~~~~
 
-    >>>  /path/to/venv/bin/python3 prune_expired.py 'dbname.db' 1200
-
-The first argument is the path to the `ShelfCache <https://github.com/cristoper/shelfcache>`_ database file, and the second
-argument is the age threshold (in seconds), any entries older than which will
-be deleted.
-
-Non-features
-------------
-FeedMixer does not (yet?) do these things itself, though finding or writing suitable
-WSGI middleware is one way to get them:
-
-- Authentication
-- Rate limiting
-
-Installation
-------------
-
-#. Clone this repository:
-   ``$ git clone https://github.com/cristoper/feedmixer.git``
-#. ``$ cd feedmixer``
-#. Optional, but I recommend creating a `virtual environment`_:
-
-   a. ``$ virtualenv venv`` or ``$ python3 -m venv venv``
-   b. ``$ source venv/bin/activate``
-
-#. Install dependencies: ``$ pip3 install -r requirements.txt``
-
-``feedmixer_wsgi`` should run in any WSGI server (uwsgi, gunicorn, mod_wsgi, ...). Refer to the documentation for your server of choice.
-
-.. _`virtual environment`: https://virtualenv.pypa.io/en/stable/
+Deploy FeedMixer using any WSGI-compliant server (uswgi, gunicorn, mod_wsgi,
+...). Refer to the documentation of the server of your choice.
 
 mod_wsgi
-~~~~~~~~
+````````
 
 This is how I've deployed FeedMixer with Apache and mod_wsgi_ (on Debian):
 
@@ -184,11 +164,30 @@ to be enabled). Restrict (or remove) as your application requires.
 
 .. _mod_wsgi: https://modwsgi.readthedocs.io/en/develop/
 
+Database Pruning
+----------------
+The included ``prune_expired.py`` script can be used to prune old entries from
+the database (for example by running it from cron)::
+
+    >>>  /path/to/venv/bin/python3 prune_expired.py 'dbname.db' 1200
+
+The first argument is the path to the `ShelfCache <https://github.com/cristoper/shelfcache>`_ database file, and the second
+argument is the age threshold (in seconds), any entries older than which will
+be deleted.
+
+Non-features
+------------
+FeedMixer does not (yet?) do these things itself, though finding or writing suitable
+WSGI middleware is one way to get them (running it behind a reverse proxy server like nginx is another way):
+
+- Authentication
+- Rate limiting
+
+
 Hacking
 -------
 
 First install as per instructions above.
-
 
 Documentation
 ~~~~~~~~~~~~~
