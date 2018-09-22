@@ -155,12 +155,22 @@ class TestMixedEntries(unittest.TestCase):
         self.assertIsInstance(fm.error_urls['fetcherror'], RequestException)
         self.assertIsInstance(fm.error_urls['parseerror'], ParseError)
 
-    def test_keep_all(self):
+    def test_keep_all_neg(self):
         """
         Setting num_keep to -1 should keep all the entries.
         """
         mc = build_mock_cache_get()
         fm = FeedMixer(feeds=['atom'], cache_get=mc, num_keep=-1,
+                       cache=mock_shelfcache())
+        me = fm.mixed_entries
+        self.assertEqual(len(me), 12)
+
+    def test_keep_all_zero(self):
+        """
+        Setting num_keep to 0 should also keep all the entries.
+        """
+        mc = build_mock_cache_get()
+        fm = FeedMixer(feeds=['atom'], cache_get=mc, num_keep=0,
                        cache=mock_shelfcache())
         me = fm.mixed_entries
         self.assertEqual(len(me), 12)

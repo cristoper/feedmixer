@@ -26,7 +26,7 @@ f
     multiple feeds, simply include multiple `f` fields.
 
 n
-    The number of entries to keep from each field (pass -1 to keep all entries,
+    The number of entries to keep from each field (pass 0 to keep all entries,
     which is the default if no `n` field is provided).
 
 full
@@ -72,7 +72,7 @@ def parse_qs(req: falcon.Request) -> ParsedQS:
     """
     qs = falcon.uri.parse_query_string(req.query_string)
     feeds = qs.get('f', [])
-    n = qs.get('n', -1)
+    n = qs.get('n', 0)
     full = qs.get('full', False)
     if not isinstance(feeds, list): feeds = [feeds] # NOQA
     return ParsedQS(feeds, int(n), bool(full))

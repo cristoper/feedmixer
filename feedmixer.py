@@ -252,7 +252,7 @@ class FeedMixer(object):
                         logger.info("Got parsed FeedParserDict from cache; using it.")
                         f = resp
 
-                    if self._num_keep == -1:
+                    if self._num_keep < 1:
                         newest = f.entries
                     else:
                         newest = f.entries[0:self._num_keep]

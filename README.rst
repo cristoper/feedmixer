@@ -19,7 +19,7 @@ f
     A url-encoded URL of a feed (any version of Atom or RSS). To include multiple feeds, simply include multiple `f` fields.
 
 n
-    The number of entries to keep from each field (pass -1 to keep all entries, which is the default if no `n` field is provided).
+    The number of entries to keep from each field (pass 0 to keep all entries, which is the default if no `n` field is provided).
 
 full
     If set, prefer the full entry `content`; otherwise prefer the shorter entry `summary`.
