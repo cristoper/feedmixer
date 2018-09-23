@@ -4,6 +4,21 @@ FeedMixer is a tiny WSGI (Python3) micro service which takes a list of feed
 URLs and returns a new feed consisting of the most recent `n` entries from each
 given feed.
 
+Status
+------
+
+Changelog
+~~~~~~~~~
+
+- v2.0.0_ The JSON output now conforms to `JSON Feed version 1`_. This breaks any client which depends on the previous ad-hoc JSON format. That legacy format will continue to be maintained in the `v1 branch`_, so any clients which don't want to update to the JSON Feed format should depend on that branch.
+
+- v1.0.0_ Stable API. I'm using it in production for small personal "planet"-like feed aggregators.
+
+
+.. _v2.0.0: https://github.com/cristoper/feedmixer/tree/v2.0.0
+.. _`JSON FEED version 1`: https://jsonfeed.org/
+.. _`v1 branch`: https://github.com/cristoper/feedmixer/tree/v1
+.. _v1.0.0: https://github.com/cristoper/feedmixer/tree/v1.0.0
 
 API
 ---
