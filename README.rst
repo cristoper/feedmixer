@@ -169,11 +169,11 @@ Docker
 
 An alternative to using a virtualenv for both building and deploying is to run FeedMixer in a Docker container. The included Dockerfile will produce an image which runs FeedMixer using gunicorn.
 
-Build the image from the feedmixer directory:
+Build the image from the feedmixer directory::
 
 $ docker build . -t feedmixer
 
-Run it in the foreground:
+Run it in the foreground::
 
 $ docker run -p 8000:8000 feedmixer
 
