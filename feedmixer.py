@@ -62,6 +62,7 @@ from typing import Type, List, Optional, Callable, Dict, Union
 # https://docs.djangoproject.com/en/1.10/_modules/django/utils/feedgenerator/
 import feedgenerator
 from feedgenerator import Rss201rev2Feed, Atom1Feed, SyndicationFeed
+from jsonfeed import JSONFeed
 
 import feedparser
 from feedparser.util import FeedParserDict
@@ -79,13 +80,6 @@ error_dict_t = Dict[str, FCException]
 cacher_t = Callable[[str], FeedParserDict]
 
 logger = logging.getLogger(__name__)
-
-
-def json_encode_date(obj):
-    if hasattr(obj, 'isoformat'):
-        return obj.isoformat()+'Z'
-    else:
-        return str(obj)
 
 
 class FeedMixer(object):
@@ -205,8 +199,7 @@ class FeedMixer(object):
             A JSON dict consisting of the `num_keep` most recent entries from
             each of the `feeds`.
         """
-        return json.dumps(self.mixed_entries, default=json_encode_date,
-                          sort_keys=True)
+        return self.__generate_feed(JSONFeed).writeString('utf-8')
 
     def __fetch_entries(self) -> None:
         """
