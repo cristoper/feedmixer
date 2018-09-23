@@ -229,6 +229,18 @@ Tests are in the `test` directory and Python will find and run them with::
 
 $ python3 -m unittest
 
+Typechecking
+~~~~~~~~~~~~
+
+To check types using mypy_::
+
+$ MYPYPATH=stub/ mypy --ignore-missing-imports -p feedmixer
+
+Not everything is stubbed out, but can be useful for catching bugs after changing `feedparser.py`
+
+.. _mypy: http://mypy-lang.org/
+
+
 Get help
 --------
 
