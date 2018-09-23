@@ -143,7 +143,7 @@ class FeedMixer(object):
         self.feeds = self._feeds
 
     @property
-    def mixed_entries(self) -> List[dict]:
+    def mixed_entries(self) -> List[Optional[dict]]:
         """
         The parsed feed entries fetched from the list of URLs in `feeds`.
         (Accessing the property triggers the feeds to be fetched/cached if they
@@ -170,7 +170,7 @@ class FeedMixer(object):
         return self._feeds
 
     @feeds.setter
-    def feeds(self, value: List[str]) -> None:
+    def feeds(self, value: List[Optional[str]]) -> None:
         """
         Reset _mixed_entries whenever we get a new list of feeds.
         """
@@ -275,7 +275,7 @@ class FeedMixer(object):
 
     @staticmethod
     def extract_meta(parsed_entries: List[dict],
-                     prefer_summary=True) -> List[dict]:
+                     prefer_summary=True) -> List[Optional[dict]]:
         """
         Convert a FeedParserDict object into a dict compatible with the Django
         feedgenerator classes.
@@ -285,7 +285,7 @@ class FeedMixer(object):
             prefer_summary: If True, prefer the (short) 'summary'; otherwise
                 prefer the (long) 'content'.
         """
-        mixed_entries = []
+        mixed_entries = [] # type: List[Optional[dict]]
         for e in parsed_entries:
             metadata = {}
 
