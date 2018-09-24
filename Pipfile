@@ -1,0 +1,16 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+"shelfcache >=1.4.0" = {git = "git://github.com/cristoper/shelfcache.git"}
+feedparser = {ref = "no-independent-content-and-description-order", git = "git://github.com/cristoper/feedparser.git"}
+feedgenerator = "*"
+django-jsonfeed = ">=0.2.0"
+falcon = "*"
+typing = "*"
+requests = "*"
+
+[dev-packages]
+
