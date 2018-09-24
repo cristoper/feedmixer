@@ -1,7 +1,7 @@
 git+git://github.com/cristoper/shelfcache.git#egg=shelfcache >=1.4.0
 git+git://github.com/cristoper/feedparser.git@no-independent-content-and-description-order#egg=feedparser
 feedgenerator
-django-jsonfeed
+django-jsonfeed>=0.2.0
 falcon
 typing
 requests
