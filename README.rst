@@ -229,9 +229,9 @@ Documentation
 
 Other than this README, the documentation is in the docstrings. To build a pretty version (HTML) using Sphinx:
 
-1. Install Sphinx dependencies: ``$ pip3 install -r doc/requirements.txt``
+1. Install Sphinx dependencies: ``$ pipenv run pip install -r doc/requirements.txt``
 2. Change to `doc/` directory: ``$ cd doc``
-3. Build: ``$ make html``
+3. Build: ``$ pipenv run make html``
 4. View: ``$ x-www-browser _build/html/index.html``
 
 Tests
