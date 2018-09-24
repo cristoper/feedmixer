@@ -225,7 +225,7 @@ Tests
 
 Tests are in the `test` directory and Python will find and run them with::
 
-$ python3 -m unittest
+$ pipenv run python3 -m unittest
 
 Typechecking
 ~~~~~~~~~~~~
