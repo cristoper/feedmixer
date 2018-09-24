@@ -98,46 +98,45 @@ $ pip3 install httpie
 $ http localhost:8000/json f==http://hnrss.org/newest f==http://americancynic.net/atom.xml n==1
 
 .. code-block:: json
-
-    HTTP/1.1 200 OK
-    Access-Control-Allow-Origin: *
-    Connection: Keep-Alive
-    Content-Length: 1319
-    Content-Type: application/json
-    Date: Sat, 15 Apr 2017 00:25:18 GMT
-    Keep-Alive: timeout=5, max=100
-    Server: Apache/2.4.10 (Debian)
-
-    [
-        {
-            "author_email": null,
-            "author_link": null,
-            "author_name": "cwisecarver",
-            "comments": "https://news.ycombinator.com/item?id=14118526",
-            "description": "I'm working through a book on functional web development with Elixir, OTP, and Phoenix (search that string and you'll find it) and I started thinking about how this language and \"platform\" had come about. I'd like to know more. Any recommendations?",
-            "enclosures": [],
-            "item_copyright": null,
-            "link": "https://news.ycombinator.com/item?id=14118526",
-            "pubdate": "2017-04-15 00:20:09",
-            "title": "Ask HN: Book recommendations about how Erlang and OTP were developed?",
-            "unique_id": "https://news.ycombinator.com/item?id=14118526",
-            "updateddate": "2017-04-15 00:20:09"
-        },
-        {
-            "author_email": null,
-            "author_link": "http://americancynic.net",
-            "author_name": "A. Cynic",
-            "comments": null,
-            "description": "Here are some of the better introductions to the alt-right that I've found, just in case anybody wants to waste as much time as me reading about this stuff.",
-            "enclosures": [],
-            "item_copyright": null,
-            "link": "http://americancynic.net/log/2017/3/2/guides_to_the_alt-right/",
-            "pubdate": "2017-03-02 16:42:49",
-            "title": "Guides to the Alt-Right",
-            "unique_id": "tag:americancynic.net,2017-03-02:/log/2017/3/2/guides_to_the_alt-right/",
-            "updateddate": "2017-03-02 16:42:49"
-        }
-    ]
+  
+   HTTP/1.1 200 OK
+   Connection: close
+   Date: Mon, 24 Sep 2018 04:23:28 GMT
+   Server: gunicorn/19.9.0
+   content-length: 1323
+   content-type: application/json
+   
+   {
+       "description": "json feed created by FeedMixer.",
+       "home_page_url": "http://localhost:8000/json?f=http%3A%2F%2Fhnrss.org%2Fnewest&f=http%3A%2F%2Famericancynic.net%2Fatom.xml&n=1",
+       "items": [
+           {
+               "author": {
+                   "name": "jedwhite"
+               },
+               "content_html": "<p>Article URL: <a href=\"https://www.gsb.stanford.edu/insights/power-telling\">https://www.gsb.stanford.edu/insights/power-telling</a></p>\n<p>Comments URL: <a href=\"https://news.ycombinator.com/item?id=18054969\">https://news.ycombinator.com/item?id=18054969</a></p>\n<p>Points: 1</p>\n<p># Comments: 0</p>",
+               "date_modified": "2018-09-24T04:13:47Z",
+               "date_published": "2018-09-24T04:13:47Z",
+               "id": "https://news.ycombinator.com/item?id=18054969",
+               "title": "The Power of Telling It Like It Is",
+               "url": "https://www.gsb.stanford.edu/insights/power-telling"
+           },
+           {
+               "author": {
+                   "name": "A. Cynic",
+                   "url": "https://americancynic.net/about/"
+               },
+               "content_html": "A review of a friend's book and some thoughts on hell.",
+               "date_modified": "2018-09-12T15:03:22Z",
+               "date_published": "2018-08-29T18:07:24Z",
+               "id": "tag:americancynic.net,2018-08-29:/log/2018/8/29/thou_shalt_not_believe/",
+               "title": "Book Review: Thou Shalt Not Believe by John Ubhal",
+               "url": "https://americancynic.net/log/2018/8/29/thou_shalt_not_believe/"
+           }
+       ],
+       "title": "FeedMixer feed",
+       "version": "https://jsonfeed.org/version/1"
+   }
 
 Deploy
 ~~~~~~
