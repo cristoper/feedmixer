@@ -31,12 +31,8 @@ Installation
 #. Clone this repository:
    ``$ git clone https://github.com/cristoper/feedmixer.git``
 #. ``$ cd feedmixer``
-#. Optional, but I recommend creating a `virtual environment`_:
-
-   a. ``$ virtualenv venv`` or ``$ python3 -m venv venv``
-   b. ``$ source venv/bin/activate``
-
-#. Install dependencies: ``$ pip3 install -r requirements.txt``
+#. Recommended: use pipenv_ to create a virtualenv and install dependencies:
+   ``$ pipenv --three sync``
 
 The project consists of three modules:
 
@@ -49,6 +45,7 @@ The project consists of three modules:
 .. _falcon: https://falconframework.org/
 .. _gunicorn: http://gunicorn.org/
 .. _`virtual environment`: https://virtualenv.pypa.io/en/stable/
+.. _pipenv: https://pipenv.readthedocs.io/en/latest/
 
 Run Locally
 ~~~~~~~~~~~
@@ -58,7 +55,8 @@ defaults and a rotating logfile) as both `api` and `application` (default names
 used by common WSGI servers). To start the service with gunicorn_, for example,
 clone the repository and in the root directory run::
 
-$ gunicorn feedmixer_wsgi
+$ pipenv run pip3 install gunicorn
+$ pipenv run gunicorn feedmixer_wsgi
 
 Note that the top-level install directory must be writable by the server
 running the app, because it creates the logfiles ('fm.log' and 'fm.log.1') and
