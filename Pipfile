@@ -5,7 +5,7 @@ name = "pypi"
 
 [packages]
 "shelfcache" = {git = "git://github.com/cristoper/shelfcache.git"}
-feedparser = {ref = "no-independent-content-and-description-order", git = "git://github.com/cristoper/feedparser.git"}
+feedparser = {ref = "no-independent-content-and-description-order", git = "git://github.com/mosasiru/feedparser.git"}
 feedgenerator = "*"
 django-jsonfeed = ">=0.2.0"
 falcon = "*"
