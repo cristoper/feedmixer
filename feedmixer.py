@@ -340,6 +340,10 @@ class FeedMixer(object):
                     enclist.append(feedgenerator.Enclosure(enc.href, enc.length,
                                                            enc.type))
                 metadata['enclosures'] = enclist
+                if len(enclist) > 0:
+                    # The current standalone version of feedgenerator does not
+                    # handle 'enclosures' only a single 'enclosure'
+                    metadata['enclosure'] = enclist[0]
 
             mixed_entries.append(metadata)
         return mixed_entries
