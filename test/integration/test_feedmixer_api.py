@@ -43,24 +43,24 @@ class FMTestCase(testing.TestCase):
 
 class TestAtom(FMTestCase):
     def test_single_good_all(self):
-        qs = build_qs(feeds=['http://mretc.net/shaarli/?do=atom'], n=-1)
+        qs = build_qs(feeds=['https://americancynic.net/shaarli/?do=atom'], n=-1)
         result, errors = self.get_results_errors(path='/atom', qs=qs)
         atom = feedparser.parse(result.text)
         self.assertFalse(atom.bozo)
         self.assertTrue(len(atom.entries) > 5)
 
     def test_good_and_404(self):
-        qs = build_qs(feeds=['http://mretc.net/shaarli/?do=atom',
-                             'http://mretc.net/thisdoesnotexist'], n=1)
+        qs = build_qs(feeds=['https://americancynic.net/shaarli/?do=atom',
+                             'https://americancynic.net/thisdoesnotexist'], n=1)
         result, errors = self.get_results_errors(path='/atom', qs=qs)
         atom = feedparser.parse(result.text)
         self.assertFalse(atom.bozo)
         self.assertTrue(len(atom.entries) == 1)
         self.assertIsNotNone(errors)
-        self.assertIn('404', errors['http://mretc.net/thisdoesnotexist'])
+        self.assertIn('404', errors['https://americancynic.net/thisdoesnotexist'])
 
     def test_mix(self):
-        qs = build_qs(feeds=['http://mretc.net/shaarli/?do=atom',
+        qs = build_qs(feeds=['https://americancynic.net/shaarli/?do=atom',
                              'https://news.ycombinator.com/rss'], n=2)
         result, errors = self.get_results_errors(path='/atom', qs=qs)
         atom = feedparser.parse(result.text)
