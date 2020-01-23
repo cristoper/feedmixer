@@ -81,61 +81,61 @@ its cache database ('fmcache.db') there.
 
 As an example, assuming an instance of the FeedMixer app is running on the localhost on port 8000, let's fetch the newest entry each from the following Atom and RSS feeds:
 
-- https://americancynic.net/shaarli/?do=atom
+- https://catswhisker.xyz/shaarli/?do=atom
 - https://hnrss.org/newest
 
 The constructed URL to GET is:
 
-``http://localhost:8000/atom?f=https://americancynic.net/shaarli/?do=atom&f=https://hnrss.org/newest&n=1``
+``http://localhost:8000/atom?f=https://catswhisker.xyz/shaarli/?do=atom&f=https://hnrss.org/newest&n=1``
 
 Entering it into a browser will return an Atom feed with two entries. To GET it from a client programatically, remember to URL-encode the `f` fields::
 
-$ curl 'localhost:8000/atom?f=https%3A%2F%2Famericancynic.net%2Fshaarli%2F%3Fdo%3Datom&f=https%3A%2F%2Fhnrss.org%2Fnewest&n=1'
+$ curl 'localhost:8000/atom?f=https%3A%2F%2Fcatswhisker.xyz%2Fshaarli%2F%3Fdo%3Datom&f=https%3A%2F%2Fhnrss.org%2Fnewest&n=1'
 
 `HTTPie <https://httpie.org/>`_ is a nice command-line http client that makes testing RESTful services more pleasant::
 
 $ pip3 install httpie
-$ http localhost:8000/json f==http://hnrss.org/newest f==http://americancynic.net/atom.xml n==1
+$ http localhost:8000/json f==http://hnrss.org/newest f==http://catswhisker.xyz/atom.xml n==1
 
 .. code-block:: json
   
    HTTP/1.1 200 OK
    Connection: close
-   Date: Mon, 24 Sep 2018 04:23:28 GMT
-   Server: gunicorn/19.9.0
-   content-length: 1323
+   Date: Thu, 23 Jan 2020 03:53:45 GMT
+   Server: gunicorn/20.0.4
+   content-length: 1296
    content-type: application/json
-   
+
    {
-       "description": "json feed created by FeedMixer.",
-       "home_page_url": "http://localhost:8000/json?f=http%3A%2F%2Fhnrss.org%2Fnewest&f=http%3A%2F%2Famericancynic.net%2Fatom.xml&n=1",
-       "items": [
-           {
-               "author": {
-                   "name": "jedwhite"
-               },
-               "content_html": "<p>Article URL: <a href=\"https://www.gsb.stanford.edu/insights/power-telling\">https://www.gsb.stanford.edu/insights/power-telling</a></p>\n<p>Comments URL: <a href=\"https://news.ycombinator.com/item?id=18054969\">https://news.ycombinator.com/item?id=18054969</a></p>\n<p>Points: 1</p>\n<p># Comments: 0</p>",
-               "date_modified": "2018-09-24T04:13:47Z",
-               "date_published": "2018-09-24T04:13:47Z",
-               "id": "https://news.ycombinator.com/item?id=18054969",
-               "title": "The Power of Telling It Like It Is",
-               "url": "https://www.gsb.stanford.edu/insights/power-telling"
-           },
-           {
-               "author": {
-                   "name": "A. Cynic",
-                   "url": "https://americancynic.net/about/"
-               },
-               "content_html": "A review of a friend's book and some thoughts on hell.",
-               "date_modified": "2018-09-12T15:03:22Z",
-               "date_published": "2018-08-29T18:07:24Z",
-               "id": "tag:americancynic.net,2018-08-29:/log/2018/8/29/thou_shalt_not_believe/",
-               "title": "Book Review: Thou Shalt Not Believe by John Ubhal",
-               "url": "https://americancynic.net/log/2018/8/29/thou_shalt_not_believe/"
-           }
-       ],
-       "title": "FeedMixer feed",
-       "version": "https://jsonfeed.org/version/1"
+     "version": "https://jsonfeed.org/version/1", 
+     "title": "FeedMixer feed", 
+     "home_page_url": "http://localhost:8000/json?f=http%3A%2F%2Fhnrss.org%2Fnewest&f=https%3A%2F%2Fcatswhisker.xyz%2Fatom.xml&n=1", 
+     "description": "json feed created by FeedMixer.", 
+     "items": [
+       {
+         "title": "Kyrsten Sinema, the Only Anti-Net Neutrality Dem, Linked to Comcast Super Pac", 
+         "content_html": "<p>Article URL: <a href=\"https://prospect.org/politics/kyrsten-sinema-anti-net-neutrality-super-pac-comcast-lobbyist/\">https://prospect.org/politics/kyrsten-sinema-anti-net-neutrality-super-pac-comcast-lobbyist/</a></p>\n<p>Comments URL: <a href=\"https://news.ycombinator.com/item?id=22124592\">https://news.ycombinator.com/item?id=22124592</a></p>\n<p>Points: 1</p>\n<p># Comments: 0</p>", 
+         "url": "https://prospect.org/politics/kyrsten-sinema-anti-net-neutrality-super-pac-comcast-lobbyist/", 
+         "id": "https://news.ycombinator.com/item?id=22124592", 
+         "author": {
+           "name": "joeyespo"
+         }, 
+         "date_published": "2020-01-23T03:32:19Z", 
+         "date_modified": "2020-01-23T03:32:19Z"
+       }, 
+       {
+         "title": "FO Roundup December 2019", 
+         "content_html": "I've started knitting again.", 
+         "url": "http://catswhisker.xyz/log/2019/12/3/fo_december/", 
+         "id": "tag:catswhisker.xyz,2019-12-04:/log/2019/12/3/fo_december/", 
+         "author": {
+           "name": "A. Cynic", 
+           "url": "http://catswhisker.xyz/about/"
+         }, 
+         "date_published": "2019-12-04T04:48:59Z", 
+         "date_modified": "2019-12-04T04:48:59Z"
+       }
+     ]
    }
 
 Deploy
