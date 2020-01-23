@@ -10,11 +10,13 @@ Status
 Changelog
 ~~~~~~~~~
 
+- v2.1.0_ Fix handling of RSS enclosures and Atom links so that they are included in output (important if you're trying to aggregate podcasts or similar)
 - v2.0.0_ The JSON output now conforms to `JSON Feed version 1`_. This breaks any client which depends on the previous ad-hoc JSON format. That legacy format will continue to be maintained in the `v1 branch`_, so any clients which don't want to update to the JSON Feed format should depend on that branch.
 
 - v1.0.0_ Stable API. I'm using it in production for small personal "planet"-like feed aggregators.
 
 
+.. _v2.1.0: https://github.com/cristoper/feedmixer/tree/v2.1.0
 .. _v2.0.0: https://github.com/cristoper/feedmixer/tree/v2.0.0
 .. _`JSON FEED version 1`: https://jsonfeed.org/
 .. _`v1 branch`: https://github.com/cristoper/feedmixer/tree/v1
