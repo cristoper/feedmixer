@@ -35,24 +35,25 @@ full
 
 As an example, assuming an instance of the FeedMixer app is running on the localhost on port 8000, let's fetch the newest entry each from the following Atom and RSS feeds:
 
-- https://americancynic.net/shaarli/?do=atom
+- https://catswhisker.xyz/shaarli/?do=atom
 - https://hnrss.org/newest
 
 The constructed URL to GET is:
 
-``http://localhost:8000/atom?f=https://americancynic.net/shaarli/?do=atom&f=https://hnrss.org/newest&n=1``
+``http://localhost:8000/atom?f=https://catswhisker.xyz/shaarli/?do=atom&f=https://hnrss.org/newest&n=1``
 
 Entering it into a browser will return an Atom feed with two entries. To GET it
 from a client programatically, remember to URL-encode the `f` fields::
 
->>> curl 'localhost:8000/atom?f=https%3A%2F%2Famericancynic.net%2Fshaarli%2F%3Fdo%3Datom&f=https%3A%2F%2Fhnrss.org%2Fnewest&n=1'
+>>> curl 'localhost:8000/atom?f=https%3A%2F%2Fcatswhisker.xyz%2Fshaarli%2F%3Fdo%3Datom&f=https%3A%2F%2Fhnrss.org%2Fnewest&n=1'
 
 
 Interface
 ---------
 """
 from feedmixer import FeedMixer
-from shelfcache import ShelfCache
+import cachecontrol
+import requests
 import falcon
 from typing import NamedTuple, List
 import json
@@ -87,23 +88,18 @@ class MixedFeed:
     as a JSON hash.
     """
     def __init__(self, ftype='atom', title='FeedMixer feed',
-                 desc='{type} feed created by FeedMixer.',
-                 db_path='fmcache.db', exp_seconds=300) -> None:
+                 desc='{type} feed created by FeedMixer.') -> None:
         """
         :param ftype: one of 'atom', 'rss', or 'json'
         :param title: the title of the generated feed
         :param desc: description of the generated feed (the '{type}' formatting
             parameter will be replaced by the value of `ftype`)
-        :param db_path: the path where the cache database file should be created
-        :param exp_seconds: the default number of seconds to cache feeds before
-            re-validating. This can be overridden by a Cache-Control header from
-            the server.
         """
         super().__init__()
         self.ftype = ftype
         self.title = title
         self.desc = desc.format(type=ftype)
-        self.cache = ShelfCache(db_path=db_path, exp_seconds=exp_seconds)
+        self.sess = cachecontrol.CacheControl(requests.Session())
 
     def on_get(self, req: falcon.Request, resp: falcon.Response) -> None:
         """
@@ -113,7 +109,7 @@ class MixedFeed:
         summ = not full
         fm = FeedMixer(feeds=feeds, num_keep=n, prefer_summary=summ,
                        title=self.title, desc=self.desc, link=req.uri,
-                       cache=self.cache)
+                       sess=self.sess)
 
         # dynamically find and call appropriate method based on ftype:
         method_name = "{}_feed".format(self.ftype)
@@ -140,19 +136,16 @@ class MixedFeed:
         resp.status = falcon.HTTP_200
 
 
-def wsgi_app(title='FeedMixer feed', desc='{type} feed created by FeedMixer.',
-             db_path='fmcache.db', exp_seconds=300) -> falcon.API:
+def wsgi_app(title='FeedMixer feed',
+        desc='{type} feed created by FeedMixer.') -> falcon.API:
     """
     Creates the Falcon api object (a WSGI-compliant callable)
 
     See `FeedMixer` docstring for parameter descriptions.
     """
-    atom = MixedFeed(ftype='atom', title=title, desc=desc, db_path=db_path,
-                     exp_seconds=exp_seconds)
-    rss = MixedFeed(ftype='rss', title=title, desc=desc, db_path=db_path,
-                    exp_seconds=exp_seconds)
-    jsn = MixedFeed(ftype='json', title=title, desc=desc, db_path=db_path,
-                    exp_seconds=exp_seconds)
+    atom = MixedFeed(ftype='atom', title=title, desc=desc,)
+    rss = MixedFeed(ftype='rss', title=title, desc=desc,)
+    jsn = MixedFeed(ftype='json', title=title, desc=desc,)
 
     api = falcon.API()
     api.add_route('/atom', atom)

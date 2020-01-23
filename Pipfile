@@ -4,12 +4,12 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-shelfcache = {git = "git://github.com/cristoper/shelfcache.git"}
 feedparser = {git = "git://github.com/cristoper/feedparser.git",ref = "no-independent-content-and-description-order"}
 feedgenerator = "*"
 falcon = "*"
 typing = "*"
 requests = "*"
 django-jsonfeed = {git = "https://github.com/cristoper/django-jsonfeed",ref = "fix_attachment"}
+cachecontrol = "*"
 
 [dev-packages]

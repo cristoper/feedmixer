@@ -8,11 +8,10 @@ run::
 $ gunicorn feedmixer_wsgi
 
 This file can be used-as is or copied as a template (to customize things like
-the title, description, cache database path, logging, etc.)
+the title, description, logging, etc.)
 
 The top-level install directory must be writable by the server running the app,
-because it creates the logfiles ('fm.log' and 'fm.log.1') and its cache database
-('fmcach') there.
+because it creates the logfiles ('fm.log' and 'fm.log.1') there.
 
 .. _gunicorn: http://gunicorn.org/
 """
@@ -26,6 +25,7 @@ import os
 
 LOG_PATH = 'fm.log'
 LOG_LEVEL = logging.INFO
+#LOG_LEVEL = logging.DEBUG
 TIMEOUT = 120  # time to wait for http requests (seconds)
 socket.setdefaulttimeout(TIMEOUT)
 
@@ -55,7 +55,8 @@ def application(environ, start_response):
     root_logger.addHandler(handler)
 
     # setup and return actual app:
-    api = wsgi_app(exp_seconds=300)
+    # TODO pass requests.Session to app so that cache can be cutomized
+    api = wsgi_app()
     return api(environ, start_response)
 
 api = application
