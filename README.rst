@@ -97,6 +97,8 @@ $ curl 'localhost:8000/atom?f=https%3A%2F%2Fcatswhisker.xyz%2Fshaarli%2F%3Fdo%3D
 $ pip3 install httpie
 $ http localhost:8000/json f==http://hnrss.org/newest f==http://catswhisker.xyz/atom.xml n==1
 
+You should see some JSONFeed output (since we are requesting from the `/json` endpoint):
+
 .. code-block:: json
   
    HTTP/1.1 200 OK
