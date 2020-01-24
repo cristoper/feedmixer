@@ -76,6 +76,8 @@ error_dict_t = Dict[str, FCException]
 
 logger = logging.getLogger(__name__)
 
+# number of parsed feeds to cache
+MAX_PARSE_CACHE = 100
 
 class FeedMixer(object):
     def __init__(self, title='Title', link='', desc='',
@@ -98,7 +100,10 @@ class FeedMixer(object):
             feeds
             max_feeds: the maximum number of feeds to fetch
                 injectable for testing purposes)
-            sess: the requests.Session object to use for making http GET requests
+            sess: the requests.session object to use for making http GET
+                requests. You can pass in a session object that caches results (see
+                the cachecontrol package) or sets custom headers, etc. If not
+                set, a new default session will be used per request.
         """
         self.title = title
         self.link = link
@@ -113,6 +118,13 @@ class FeedMixer(object):
         if sess is None:
             sess = requests.Session()
         self.sess = sess
+
+        # store our parsed cache as an attribute of the shared session object
+        # as a convenient place to share cache state between wsgi requests
+        try:
+            self.sess.fm_parsed_cache
+        except AttributeError:
+            self.sess.fm_parsed_cache = {} # type: Dict[string, FeedParserDict]
 
         self.sess.headers.update({
             'User-Agent': 'feedmixer (github.com/cristoper/feedmixer)'
@@ -204,15 +216,41 @@ class FeedMixer(object):
                     url for url in self.feeds}
             for future in concurrent.futures.as_completed(future_to_url):
                 url = future_to_url[future]
+                logger.info("Fetched {}".format(url))
                 try:
                     resp = future.result()
 
-                    # TODO cache FeedParserDict instead of re-parsing cached result?
-                    # (like v2.0.0 used to do with shelfcache)
-                    # I think we can access the underlying cache object of the
-                    # requests session adapter
+                    # If the response was cached then use the parsed version
+                    # from last time it was fetched instead of re-parsing it
+                    #
+                    # This is more space-expensive than only caching the parsed
+                    # version, but it is easier than trying to mess with the
+                    # underlying cache of the passed-in requests.session
+                    # object.
+                    needs_parse = True
+                    if getattr(resp, 'from_cache', False):
+                        logger.info("{} was cached; using parsed_cache"
+                                .format(url))
+                        f = self.sess.fm_parsed_cache.get(url)
 
-                    f = feedparser.parse(resp.text)
+                        if f is not None:
+                            needs_parse = False
+
+                    if needs_parse:
+                        logger.info("Parsed feed from {} was not cached; parsing now..."
+                                .format(url))
+                        f = feedparser.parse(resp.text)
+
+                        # TODO: use a better cash strategy; for now we just
+                        # clear it completely when it gets too big
+                        if len(self.sess.fm_parsed_cache) > MAX_PARSE_CACHE:
+                            logger.info("Parsed cache exceeds limits; clearing it now.")
+                            self.sess.fm_parsed_cache = {} # type: Dict[string, FeedParserDict]
+
+                        self.sess.fm_parsed_cache[url] = f
+                        logger.info("Got feed from feedparser {}".format(url))
+                        logger.debug("Feed: {}".format(f))
+
                     parse_err = len(f.get('entries')) == 0 and f.get('bozo')
                     if f is None or parse_err:
                         logger.info("Parse error ({})"
@@ -220,8 +258,6 @@ class FeedMixer(object):
                         raise ParseError("Parse error: {}"
                                          .format(f.get('bozo_exception')))
 
-                    logger.info("Got feed from feedparser {}".format(url))
-                    logger.debug("Feed: {}".format(f))
 
                     if self._num_keep < 1:
                         newest = f.entries
