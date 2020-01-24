@@ -78,8 +78,8 @@ $ pipenv run pip3 install gunicorn
 $ pipenv run gunicorn feedmixer_wsgi
 
 Note that the top-level install directory must be writable by the server
-running the app, because it creates the logfiles ('fm.log' and 'fm.log.1') and
-its cache database ('fmcache.db') there.
+running the app, because it creates the logfiles ('fm.log' and 'fm.log.1')
+there.
 
 As an example, assuming an instance of the FeedMixer app is running on the localhost on port 8000, let's fetch the newest entry each from the following Atom and RSS feeds:
 
@@ -204,17 +204,6 @@ Troubleshooting
 Using the provided `feedmixer_wsgi.py` application, information and errors are logged to the file `fm.log` in the directory the application is started from (auto rotated with a single old log called `fm.1.log`).
 
 Any errors encountered in fetching and parsing remote feeds are reported in a custom HTTP header called `X-fm-errors`.
-
-Database Pruning
-----------------
-The included ``prune_expired.py`` script can be used to prune old entries from
-the database (for example by running it from cron)::
-
-    >>>  /path/to/venv/bin/python3 prune_expired.py 'dbname.db' 1200
-
-The first argument is the path to the `ShelfCache <https://github.com/cristoper/shelfcache>`_ database file, and the second
-argument is the age threshold (in seconds), any entries older than which will
-be deleted.
 
 Non-features
 ------------
