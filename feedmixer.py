@@ -211,8 +211,15 @@ class FeedMixer(object):
         """
         parsed_entries = []  # type: List[dict]
         self._error_urls = {}
+
+        def fetch(url):
+            # TODO parse each result on its own thread (in the executor call)
+            r = self.sess.get(url)
+            r.raise_for_status()
+            return r
+
         with ThreadPoolExecutor(max_workers=self.max_threads) as exec:
-            future_to_url = {exec.submit(self.sess.get, url):
+            future_to_url = {exec.submit(fetch, url):
                     url for url in self.feeds}
             for future in concurrent.futures.as_completed(future_to_url):
                 url = future_to_url[future]
@@ -243,6 +250,7 @@ class FeedMixer(object):
 
                         # TODO: use a better cash strategy; for now we just
                         # clear it completely when it gets too big
+                        # TODO use a LRU decorator instead
                         if len(self.sess.fm_parsed_cache) > MAX_PARSE_CACHE:
                             logger.info("Parsed cache exceeds limits; clearing it now.")
                             self.sess.fm_parsed_cache = {} # type: Dict[string, FeedParserDict]
@@ -275,7 +283,9 @@ class FeedMixer(object):
                                 e.author_detail = f.feed.author_detail
 
                     parsed_entries += newest
-                except (ParseError, RequestException) as e:
+                except Exception as e:
+                    # will be ParseError, RequestException, or an exception
+                    # from threadpool
                     self._error_urls[url] = e
                     logger.info("{} generated an exception: {}".format(url, e))
 
