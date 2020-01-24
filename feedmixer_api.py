@@ -52,7 +52,6 @@ Interface
 ---------
 """
 from feedmixer import FeedMixer
-import cachecontrol
 import requests
 import falcon
 from typing import NamedTuple, List
@@ -88,7 +87,8 @@ class MixedFeed:
     as a JSON hash.
     """
     def __init__(self, ftype='atom', title='FeedMixer feed',
-                 desc='{type} feed created by FeedMixer.') -> None:
+                 desc='{type} feed created by FeedMixer.',
+                 sess: requests.session=requests.session()) -> None:
         """
         :param ftype: one of 'atom', 'rss', or 'json'
         :param title: the title of the generated feed
@@ -99,7 +99,7 @@ class MixedFeed:
         self.ftype = ftype
         self.title = title
         self.desc = desc.format(type=ftype)
-        self.sess = cachecontrol.CacheControl(requests.Session())
+        self.sess = sess
 
     def on_get(self, req: falcon.Request, resp: falcon.Response) -> None:
         """
@@ -137,15 +137,16 @@ class MixedFeed:
 
 
 def wsgi_app(title='FeedMixer feed',
-        desc='{type} feed created by FeedMixer.') -> falcon.API:
+        desc='{type} feed created by FeedMixer.',
+        sess: requests.session=requests.session()) -> falcon.API:
     """
     Creates the Falcon api object (a WSGI-compliant callable)
 
     See `FeedMixer` docstring for parameter descriptions.
     """
-    atom = MixedFeed(ftype='atom', title=title, desc=desc,)
-    rss = MixedFeed(ftype='rss', title=title, desc=desc,)
-    jsn = MixedFeed(ftype='json', title=title, desc=desc,)
+    atom = MixedFeed(ftype='atom', title=title, desc=desc, sess=sess)
+    rss = MixedFeed(ftype='rss', title=title, desc=desc, sess=sess)
+    jsn = MixedFeed(ftype='json', title=title, desc=desc, sess=sess)
 
     api = falcon.API()
     api.add_route('/atom', atom)

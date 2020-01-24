@@ -17,6 +17,8 @@ because it creates the logfiles ('fm.log' and 'fm.log.1') there.
 """
 from feedmixer_api import wsgi_app
 import socket
+import requests
+import cachecontrol
 import logging
 import logging.handlers
 import multiprocessing
@@ -28,6 +30,9 @@ LOG_LEVEL = logging.INFO
 #LOG_LEVEL = logging.DEBUG
 TIMEOUT = 120  # time to wait for http requests (seconds)
 socket.setdefaulttimeout(TIMEOUT)
+
+# all requests share a requests.session object so they can share a CacheControl cache
+SESS = cachecontrol.CacheControl(requests.session())
 
 def application(environ, start_response):
     """
@@ -55,8 +60,7 @@ def application(environ, start_response):
     root_logger.addHandler(handler)
 
     # setup and return actual app:
-    # TODO pass requests.Session to app so that cache can be cutomized
-    api = wsgi_app()
+    api = wsgi_app(sess=SESS)
     return api(environ, start_response)
 
 api = application
