@@ -51,6 +51,7 @@ Interface
 """
 import datetime
 import logging
+import functools
 import concurrent.futures
 from concurrent.futures import ThreadPoolExecutor
 import json
@@ -68,6 +69,11 @@ import requests
 import requests.utils
 from requests.exceptions import RequestException
 
+# Memoize results from parser
+# TODO: make maxsize user-configurable
+@functools.lru_cache(maxsize=128)
+def cache_parser(text):
+    return feedparser.parse(text)
 
 # Types:
 class ParseError(Exception): pass
@@ -75,9 +81,6 @@ FCException = Union[RequestException, ParseError]
 error_dict_t = Dict[str, FCException]
 
 logger = logging.getLogger(__name__)
-
-# number of parsed feeds to cache
-MAX_PARSE_CACHE = 100
 
 class FeedMixer(object):
     def __init__(self, title='Title', link='', desc='',
@@ -118,13 +121,6 @@ class FeedMixer(object):
         if sess is None:
             sess = requests.Session()
         self.sess = sess
-
-        # store our parsed cache as an attribute of the shared session object
-        # as a convenient place to share cache state between wsgi requests
-        try:
-            self.sess.fm_parsed_cache
-        except AttributeError:
-            self.sess.fm_parsed_cache = {} # type: Dict[string, FeedParserDict]
 
         self.sess.headers.update({
             'User-Agent': 'feedmixer (github.com/cristoper/feedmixer)'
@@ -228,38 +224,11 @@ class FeedMixer(object):
                 logger.info("Fetched {}".format(url))
                 try:
                     resp = future.result()
+                    f = cache_parser(resp.text)
+                    print(cache_parser.cache_info())
 
-                    # If the response was cached then use the parsed version
-                    # from last time it was fetched instead of re-parsing it
-                    #
-                    # This is more space-expensive than only caching the parsed
-                    # version, but it is easier than trying to mess with the
-                    # underlying cache of the passed-in requests.session
-                    # object.
-                    needs_parse = True
-                    if getattr(resp, 'from_cache', False):
-                        logger.info("{} was cached; using parsed_cache"
-                                .format(url))
-                        f = self.sess.fm_parsed_cache.get(url)
-
-                        if f is not None:
-                            needs_parse = False
-
-                    if needs_parse:
-                        logger.info("Parsed feed from {} was not cached; parsing now..."
-                                .format(url))
-                        f = feedparser.parse(resp.text)
-
-                        # TODO: use a better cash strategy; for now we just
-                        # clear it completely when it gets too big
-                        # TODO use a LRU decorator instead
-                        if len(self.sess.fm_parsed_cache) > MAX_PARSE_CACHE:
-                            logger.info("Parsed cache exceeds limits; clearing it now.")
-                            self.sess.fm_parsed_cache = {} # type: Dict[string, FeedParserDict]
-
-                        self.sess.fm_parsed_cache[url] = f
-                        logger.info("Got feed from feedparser {}".format(url))
-                        logger.debug("Feed: {}".format(f))
+                    logger.info("Got feed from feedparser {}".format(url))
+                    #logger.debug("Feed: {}".format(f))
 
                     parse_err = len(f.get('entries')) == 0 and f.get('bozo')
                     if f is None or parse_err:
