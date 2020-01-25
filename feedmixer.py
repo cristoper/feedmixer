@@ -213,9 +213,11 @@ class FeedMixer(object):
         self._error_urls = {}
 
         def fetch(url):
-            # TODO parse each result on its own thread (in the executor call)
             r = self.sess.get(url)
             r.raise_for_status()
+            # NOTE: I tried doing the parsing here in the threads, but it was
+            # actually a bit slower than doing it all serially on the main
+            # thread.
             return r
 
         with ThreadPoolExecutor(max_workers=self.max_threads) as exec:
