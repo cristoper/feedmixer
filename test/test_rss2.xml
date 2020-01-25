@@ -12,7 +12,10 @@
       <title>Uber finds one allegedly stolen Waymo file on an employee’s personal device</title>
       <enclosure url="image.jpg" length="501" type="image/jpeg"/>
       <description>&lt;p&gt;Article URL: &lt;a href="https://techcrunch.com/2017/04/05/uber-finds-one-allegedly-stolen-waymo-file-on-an-employees-personal-device/"&gt;https://techcrunch.com/2017/04/05/uber-finds-one-allegedly-stolen-waymo-file-on-an-employees-personal-device/&lt;/a&gt;&lt;/p&gt;&lt;p&gt;Comments URL: &lt;a href="https://news.ycombinator.com/item?id=14044517"&gt;https://news.ycombinator.com/item?id=14044517&lt;/a&gt;&lt;/p&gt;&lt;p&gt;Points: 336&lt;/p&gt;&lt;p&gt;# Comments: 206&lt;/p&gt;</description>
-      <pubDate>Wed, 05 Apr 2017 18:48:43 +0000</pubDate>
+          <!--
+          remove date from this entry to test sorting with missing date
+          pubDate>Wed, 05 Apr 2017 18:48:43 +0000</pubDate>
+          -->
       <link>https://techcrunch.com/2017/04/05/uber-finds-one-allegedly-stolen-waymo-file-on-an-employees-personal-device/</link>
       <dc:creator>folz</dc:creator>
       <comments>https://news.ycombinator.com/item?id=14044517</comments>
