@@ -17,6 +17,7 @@ Changelog
 - v1.0.0_ Stable API. I'm using it in production for small personal "planet"-like feed aggregators.
 
 
+.. _v2.2.0: https://github.com/cristoper/feedmixer/tree/v2.2.0
 .. _v2.1.0: https://github.com/cristoper/feedmixer/tree/v2.1.0
 .. _v2.0.0: https://github.com/cristoper/feedmixer/tree/v2.0.0
 .. _`JSON FEED version 1`: https://jsonfeed.org/
