@@ -46,6 +46,30 @@ full
     If set to anything, prefer the full entry `content`; if absent, prefer the shorter entry `summary`.
 
 
+Features
+--------
+
+- Combine several feeds (just about any version of Atom and RSS should work) into a single feed
+- Optionally return only the `n` most recent items from each input feed
+- Control whether the output feed contains only the summary or the entire content of the input feed items
+- Parser results are memoized so that repeated requests for the same feed can be returned without re-parsing. And..
+- The `FeedMixer` object can be passed a custom `requests.session` object used
+  to make HTTP requests, which allows flexible customization in how requests
+  are made if you need that. The provided `feedmixer_wsgi.py` application uses
+  a session that caches HTTP responses so that repeatedly fetching the same
+  sets of feeds can usually be responded to quickly by the FeedMixer service.
+
+
+Non-features
+------------
+FeedMixer does not (yet?) do these things itself, though finding or writing
+suitable WSGI middleware is one way to get them (running it behind a reverse
+proxy server like nginx is another way):
+
+- Authentication
+- Rate limiting
+
+
 Installation
 ------------
 
@@ -222,30 +246,6 @@ logged to the file `fm.log` in the directory the application is started from
 
 Any errors encountered in fetching and parsing remote feeds are reported in a
 custom HTTP header called `X-fm-errors`.
-
-Features
---------
-
-- Combine several feeds (just about any version of Atom and RSS should work) into a single feed
-- Optionally return only the `n` most recent items from each input feed
-- Control whether the output feed contains only the summary or the entire content of the input feed items
-- Parser results are memoized so that repeated requests for the same feed can be returned without re-parsing. And..
-- The `FeedMixer` object can be passed a custom `requests.session` object used
-  to make HTTP requests, which allows flexible customization in how requests
-  are made if you need that. The provided `feedmixer_wsgi.py` application uses
-  a session that caches HTTP responses so that repeatedly fetching the same
-  sets of feeds can usually be responded to quickly by the FeedMixer service.
-
-
-Non-features
-------------
-FeedMixer does not (yet?) do these things itself, though finding or writing
-suitable WSGI middleware is one way to get them (running it behind a reverse
-proxy server like nginx is another way):
-
-- Authentication
-- Rate limiting
-
 
 Hacking
 -------
