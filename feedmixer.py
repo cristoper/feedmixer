@@ -225,8 +225,8 @@ class FeedMixer(object):
                 try:
                     resp = future.result()
                     f = cache_parser(resp.text)
-                    print(cache_parser.cache_info())
 
+                    logger.debug(cache_parser.cache_info())
                     logger.info("Got feed from feedparser {}".format(url))
                     #logger.debug("Feed: {}".format(f))
 
