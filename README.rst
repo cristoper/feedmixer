@@ -1,8 +1,8 @@
 FeedMixer
 =========
-FeedMixer is a tiny WSGI (Python3) micro service which takes a list of feed
-URLs and returns a new feed consisting of the most recent `n` entries from each
-given feed.
+FeedMixer is a little web service (Python3/WSGI) which takes a list of feed
+URLs and  combines them into a single (Atom, RSS, or JSON) feed. Useful for
+personal news aggregators, "planet"-like websites, etc.
 
 Status
 ------
@@ -10,19 +10,21 @@ Status
 Changelog
 ~~~~~~~~~
 
+- v2.3.0_ Replace on-disk cache with in-memory cache. This simplifies application code and administration (don't have to worry about pruning the cache database)
 - v2.2.0_ Fix handling of RSS feeds with missing pubDates so that they sort to the bottom instead of throwing an exception during sorting
 - v2.1.0_ Fix handling of RSS enclosures and Atom links so that they are included in output (important if you're trying to aggregate podcasts or similar)
 - v2.0.0_ The JSON output now conforms to `JSON Feed version 1`_. This breaks any client which depends on the previous ad-hoc JSON format. That legacy format will continue to be maintained in the `v1 branch`_, so any clients which don't want to update to the JSON Feed format should depend on that branch.
 
 - v1.0.0_ Stable API. I'm using it in production for small personal "planet"-like feed aggregators.
 
-
+.. _v2.3.0: https://github.com/cristoper/feedmixer/tree/v2.3.0
 .. _v2.2.0: https://github.com/cristoper/feedmixer/tree/v2.2.0
 .. _v2.1.0: https://github.com/cristoper/feedmixer/tree/v2.1.0
 .. _v2.0.0: https://github.com/cristoper/feedmixer/tree/v2.0.0
 .. _`JSON FEED version 1`: https://jsonfeed.org/
 .. _`v1 branch`: https://github.com/cristoper/feedmixer/tree/v1
 .. _v1.0.0: https://github.com/cristoper/feedmixer/tree/v1.0.0
+
 
 API
 ---
@@ -41,7 +43,7 @@ n
     The number of entries to keep from each field (pass 0 to keep all entries, which is the default if no `n` field is provided).
 
 full
-    If set, prefer the full entry `content`; otherwise prefer the shorter entry `summary`.
+    If set to anything, prefer the full entry `content`; if absent, prefer the shorter entry `summary`.
 
 
 Installation
@@ -59,7 +61,7 @@ The project consists of three modules:
 - ``feedmixer_api.py`` - contains the Falcon_-based API. Call ``wsgi_app()`` to
   get a WSGI-compliant object to host.
 - ``feedmixer_wsgi.py`` - contains an actual WSGI application which can be used
-  as-is or as a template to customize.
+  as-is or as a starting point to create your own custom FeedMixer service.
 
 .. _falcon: https://falconframework.org/
 .. _gunicorn: http://gunicorn.org/
@@ -146,7 +148,12 @@ Deploy
 ~~~~~~
 
 Deploy FeedMixer using any WSGI-compliant server (uswgi, gunicorn, mod_wsgi,
-...). Refer to the documentation of the server of your choice.
+...). For a production deployment, it is not a bad idea to put an asynchronous
+http proxy (like Nginx) in front of FeedMixer to protect it from too many and
+slow connections (as well as to provide SSL termination, additional caching,
+authoriziation, etc., as required)
+
+Refer to the documentation of the server of your choice.
 
 mod_wsgi
 ````````
@@ -174,7 +181,12 @@ This is how I've deployed FeedMixer with Apache and mod_wsgi_ (on Debian):
 
 The main things to note are the ``python-home`` (set to the virtualenv directory), ``python-path``, and ``home`` options to the ``WSGIDaemonProcess``.
 
-As configured above, Apache will run the WSGI app in a single process, handling concurrent requests on up to 10 threads. It is also possible to pass the ``processes=N`` directive to ``WSGIDaemonProcess`` in order to run the app in N processes. If ``feedmixer_wsgi.py`` detects that the WSGI server is running it in multiple processes, it will log to syslog instead of to a file.
+As configured above, Apache will run the WSGI app in a single process
+(recommended), handling concurrent requests on up to 10 threads. It is also
+possible to pass the ``processes=N`` directive to ``WSGIDaemonProcess`` in
+order to run the app in N processes. If ``feedmixer_wsgi.py`` detects that the
+WSGI server is running it in multiple processes, it will log to syslog instead
+of to a file.
 
 Also note the CORS header in the Directory directive which allows the feed to
 be fetched by JavaScript clients from any domain (this requires ``mod_headers``
@@ -185,7 +197,9 @@ to be enabled). Restrict (or remove) as your application requires.
 Docker
 ~~~~~~
 
-An alternative to using a virtualenv for both building and deploying is to run FeedMixer in a Docker container. The included Dockerfile will produce an image which runs FeedMixer using gunicorn.
+An alternative to using a virtualenv for both building and deploying is to run
+FeedMixer in a Docker container. The included Dockerfile will produce an image
+which runs FeedMixer using gunicorn.
 
 Build the image from the feedmixer directory::
 
@@ -195,20 +209,39 @@ Run it in the foreground::
 
 $ docker run -p 8000:8000 feedmixer
 
-Now from another terminal you should be able to connect to FeedMixer on localhost port 8000 just as in the example above.
+Now from another terminal you should be able to connect to FeedMixer on
+localhost port 8000 just as in the example above.
 
 
 Troubleshooting
 ---------------
 
-Using the provided `feedmixer_wsgi.py` application, information and errors are logged to the file `fm.log` in the directory the application is started from (auto rotated with a single old log called `fm.1.log`).
+Using the provided `feedmixer_wsgi.py` application, information and errors are
+logged to the file `fm.log` in the directory the application is started from
+(auto rotated with a single old log called `fm.1.log`).
 
-Any errors encountered in fetching and parsing remote feeds are reported in a custom HTTP header called `X-fm-errors`.
+Any errors encountered in fetching and parsing remote feeds are reported in a
+custom HTTP header called `X-fm-errors`.
+
+Features
+--------
+
+- Combine several feeds (just about any version of Atom and RSS should work) into a single feed
+- Optionally return only the `n` most recent items from each input feed
+- Control whether the output feed contains only the summary or the entire content of the input feed items
+- Parser results are memoized so that repeated requests for the same feed can be returned without re-parsing. And..
+- The `FeedMixer` object can be passed a custom `requests.session` object used
+  to make HTTP requests, which allows flexible customization in how requests
+  are made if you need that. The provided `feedmixer_wsgi.py` application uses
+  a session that caches HTTP responses so that repeatedly fetching the same
+  sets of feeds can usually be responded to quickly by the FeedMixer service.
+
 
 Non-features
 ------------
-FeedMixer does not (yet?) do these things itself, though finding or writing suitable
-WSGI middleware is one way to get them (running it behind a reverse proxy server like nginx is another way):
+FeedMixer does not (yet?) do these things itself, though finding or writing
+suitable WSGI middleware is one way to get them (running it behind a reverse
+proxy server like nginx is another way):
 
 - Authentication
 - Rate limiting
@@ -222,7 +255,8 @@ First install as per instructions above.
 Documentation
 ~~~~~~~~~~~~~
 
-Other than this README, the documentation is in the docstrings. To build a pretty version (HTML) using Sphinx:
+Other than this README, the documentation is in the docstrings. To build a
+pretty version (HTML) using Sphinx:
 
 1. Install Sphinx dependencies: ``$ pipenv run pip install -r doc/requirements.txt``
 2. Change to `doc/` directory: ``$ cd doc``
@@ -257,9 +291,12 @@ Feel free to open an issue on Github for help: https://github.com/cristoper/feed
 Support the project
 -------------------
 
-If this package was useful to you, please consider supporting my work on this and other open-source projects by making a small (like a tip) one-time donation: `donate via PayPal <https://www.paypal.me/cristoper/5>`_
+If this package was useful to you, please consider supporting my work on this
+and other open-source projects by making a small (like a tip) one-time
+donation: `donate via PayPal <https://www.paypal.me/cristoper/5>`_
 
-If you're looking to contract a Python developer, I might be able to help. Contact me at chris.burkhardt@orangenoiseproduction.com
+If you're looking to contract a Python developer, I might be able to help.
+Contact me at chris.burkhardt@orangenoiseproduction.com
 
 
 License
