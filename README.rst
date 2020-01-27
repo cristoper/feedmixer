@@ -49,25 +49,36 @@ full
 Features
 --------
 
+API
+~~~
+
 - Combine several feeds (just about any version of Atom and RSS should work) into a single feed
 - Optionally return only the `n` most recent items from each input feed
 - Control whether the output feed contains only the summary or the entire content of the input feed items
-- Parser results are memoized so that repeated requests for the same feed can be returned without re-parsing. And..
-- The `FeedMixer` object can be passed a custom `requests.session` object used
-  to make HTTP requests, which allows flexible customization in how requests
-  are made if you need that. The provided `feedmixer_wsgi.py` application uses
-  a session that caches HTTP responses so that repeatedly fetching the same
-  sets of feeds can usually be responded to quickly by the FeedMixer service.
+- Parser results are memoized so that repeated requests for the same feed can
+  be returned without re-parsing.
 
+Included WSGI app
+~~~~~~~~~~~~~~~~~
+- The provided `feedmixer_wsgi.py` application uses a session that caches HTTP
+  responses so that repeatedly fetching the same sets of feeds can usually be
+  responded to quickly by the FeedMixer service.
+
+  The `FeedMixer` object can be passed a custom `requests.session` object used
+  to make HTTP requests, which allows flexible customization in how requests
+  are made if you need that. 
 
 Non-features
 ------------
-FeedMixer does not (yet?) do these things itself, though finding or writing
-suitable WSGI middleware is one way to get them (running it behind a reverse
-proxy server like nginx is another way):
+FeedMixer does not (yet?) do any resource restriction itself:
 
-- Authentication
+- Authorization
 - Rate limiting
+- CORS restriction
+
+TO protect your installation either configure a front-end http proxy to take
+care of your required restrictions (Nginx is a good choice), or/and use
+suitable WSGI middleware.
 
 
 Installation
