@@ -5,9 +5,6 @@ import json
 import feedparser
 import os
 
-TESTDB = 'fm_test_cache'
-
-
 def build_qs(feeds=[], n=-1, full=False):
     feeds = ["f={}".format(f) for f in feeds]
     qs = '&'.join(feeds)
@@ -20,11 +17,8 @@ def build_qs(feeds=[], n=-1, full=False):
 class FMTestCase(testing.TestCase):
     def setUp(self):
         super().setUp()
-        self.app = feedmixer_api.wsgi_app(db_path=TESTDB)
+        self.app = feedmixer_api.wsgi_app()
 
-    def tearDown(self):
-        if os.path.exists(TESTDB):
-            os.remove(TESTDB)
 
     def get_results_errors(self, path='/', qs=''):
         """
