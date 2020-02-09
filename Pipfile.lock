@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "935028c3f99ad09c71c861ca7cf6ee9d7f390319f585d0a88365fa146c2f40f9"
+            "sha256": "bee6225ec2f8f4daaabf29ea55cdc368d5090ef744bf92776256d327046dbdbf"
         },
         "pipfile-spec": 6,
         "requires": {},
@@ -37,8 +37,12 @@
             "version": "==3.0.4"
         },
         "django-jsonfeed": {
-            "git": "https://github.com/cristoper/django-jsonfeed",
-            "ref": "04fde4f3c7a6fbe60f48b8cb1f394336eb0ee2b8"
+            "hashes": [
+                "sha256:4e59cfab439176574bcb1709233dd2409eb2f99a8de0b9bca06815e52749184b",
+                "sha256:e8f8bc8de72c45cc0d80c3fa25bdcd74283d6761c95df778b38ad8af9cdb53d1"
+            ],
+            "index": "pypi",
+            "version": "==0.3.1"
         },
         "falcon": {
             "hashes": [
@@ -62,10 +66,11 @@
         },
         "feedgenerator": {
             "hashes": [
-                "sha256:5ae05daa9cfa47fa406ee4744d0b7fa1c8a05a7a47ee0ad328ddf55327cfb106"
+                "sha256:a28a5add781509390d1a6a52d017829853ee4bef1d2e7b4d5da0e9d1b395ce54",
+                "sha256:a81d240a2c74a2ae80c393cfe374aff1a19ed3fe41a488eacc66edbe46d3f422"
             ],
             "index": "pypi",
-            "version": "==1.9"
+            "version": "==1.9.1"
         },
         "feedparser": {
             "git": "git://github.com/cristoper/feedparser.git",

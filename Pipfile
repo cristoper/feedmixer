@@ -9,7 +9,7 @@ feedgenerator = "*"
 falcon = "*"
 typing = "*"
 requests = "*"
-django-jsonfeed = {git = "https://github.com/cristoper/django-jsonfeed",ref = "fix_attachment"}
+django-jsonfeed = "*"
 cachecontrol = "*"
 
 [dev-packages]
