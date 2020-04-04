@@ -1,6 +1,8 @@
 FROM bitnami/minideb:buster as install
 
 RUN install_packages python3-pip git
+RUN pip3 install setuptools-scm && pip3 install --upgrade setuptools
+
 RUN pip3 --no-cache-dir install pipenv
 ENV LANG C.UTF-8
 ENV LC_ALL C.UTF-8
