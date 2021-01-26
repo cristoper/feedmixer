@@ -1,4 +1,4 @@
-FROM bitnami/minideb:buster as install
+FROM bitnami/minideb@sha256:0071b4efc7aae20b69dab23da9553a5911fa23cdf9fb4cf131bae5f5cd1bebec as install
 
 RUN install_packages python3-pip git
 RUN pip3 --no-cache-dir install pipenv
