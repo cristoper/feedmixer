@@ -77,7 +77,7 @@ def cache_parser(text):
 
 # Types:
 class ParseError(Exception): pass
-FCException = Union[RequestException, ParseError]
+FCException = Union[Exception, ParseError]
 error_dict_t = Dict[str, FCException]
 
 logger = logging.getLogger(__name__)
