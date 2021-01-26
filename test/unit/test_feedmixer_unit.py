@@ -4,7 +4,6 @@ import feedparser
 from feedmixer import FeedMixer, ParseError, cache_parser
 import requests
 from requests.exceptions import RequestException
-from shelfcache import shelfcache
 
 
 ATOM_PATH = 'test/test_atom.xml'
