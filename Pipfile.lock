@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "bee6225ec2f8f4daaabf29ea55cdc368d5090ef744bf92776256d327046dbdbf"
+            "sha256": "b151337640595192d11be3d671c95b32e9ee107a04eda7c64d774db14582a642"
         },
         "pipfile-spec": 6,
         "requires": {},
@@ -75,7 +75,7 @@
         },
         "feedparser": {
             "git": "git://github.com/cristoper/feedparser.git",
-            "ref": "af7f9d3825f8d39c68f086f5aa1144363cf87ae5"
+            "ref": "6e35ff74d2d18eaf622df495f051d7e62db66b3b"
         },
         "idna": {
             "hashes": [
