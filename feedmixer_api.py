@@ -72,8 +72,14 @@ def parse_qs(req: falcon.Request) -> ParsedQS:
     """
     qs = falcon.uri.parse_query_string(req.query_string)
     feeds = qs.get('f', [])
+    if len(feeds) == 0:
+        feeds = qs.get('F', [])
     n = qs.get('n', 0)
+    if n == 0:
+        n = qs.get('N', 0)
     full = qs.get('full', False)
+    if not full:
+        full = qs.get('FULL', False)
     if not isinstance(feeds, list): feeds = [feeds] # NOQA
     return ParsedQS(feeds, int(n), bool(full))
 
