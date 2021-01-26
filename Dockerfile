@@ -11,13 +11,14 @@ WORKDIR /app/
 RUN pipenv --three sync && apt purge
 RUN pipenv run pip3 install gunicorn
 
-# build layer without pip and git:
+# build layer without git:
+# (we still need pip because newer pipenv apparently depend on it)
 FROM bitnami/minideb:buster
 ENV LANG C.UTF-8
 ENV LC_ALL C.UTF-8
 ENV PIPENV_VENV_IN_PROJECT yes
 
-RUN install_packages python3 python3-distutils
+RUN install_packages python3-pip python3-distutils
 copy --from=install /app/ /app
 copy --from=install /usr/local/lib/python3.7/dist-packages/ /usr/local/lib/python3.7/dist-packages/
 copy --from=install /usr/local/bin/pipenv /usr/local/bin/pipenv
