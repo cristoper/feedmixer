@@ -34,6 +34,15 @@ class FMTestCase(testing.TestCase):
 
         return (result, json_err)
 
+class TestAPI(FMTestCase):
+    def test_no_feeds_error(self):
+        """
+        Test that an error header is returned if no feeds are given.
+        """
+        qs = build_qs(feeds=[])
+        result, errors = self.get_results_errors(path='/atom', qs=qs)
+        self.assertIsNotNone(errors)
+
 
 class TestAtom(FMTestCase):
     def test_single_good_all(self):

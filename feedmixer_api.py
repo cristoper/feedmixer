@@ -115,7 +115,7 @@ class MixedFeed:
 
         # Let app know if no feeds were given
         if len(feeds) == 0:
-            resp.append_header('X-fm-errors', "No feeds were provided in query string 'f' parameters.")
+            resp.append_header('X-fm-errors', '"No feeds were provided in query string 'f' parameters."')
 
         summ = not full
         fm = FeedMixer(feeds=feeds, num_keep=n, prefer_summary=summ,
