@@ -77,11 +77,16 @@ def parse_qs(req: falcon.Request) -> ParsedQS:
     n = qs.get('n', 0)
     if n == 0:
         n = qs.get('N', 0)
+    try:
+        int_n = int(n)
+    except ValueError as e:
+        e.args = ('Could not parse the n parameter', *e.args)
+        raise
     full = qs.get('full', False)
     if not full:
         full = qs.get('FULL', False)
     if not isinstance(feeds, list): feeds = [feeds] # NOQA
-    return ParsedQS(feeds, int(n), bool(full))
+    return ParsedQS(feeds, int_n, bool(full))
 
 
 class MixedFeed:
