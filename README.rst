@@ -180,6 +180,14 @@ You should see some JSONFeed output (since we are requesting from the `/json` en
        }
      ]
    }
+Openrc
+~~~~~~
+follow the setup until run locallly::
+
+$ cp openrc-service /etc/init.d/feedmixer
+
+edit the service file and change the working dirsctory and user
+
 
 Deploy
 ~~~~~~
