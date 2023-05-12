@@ -4,7 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-feedparser = {git = "git://github.com/cristoper/feedparser.git",ref = "no-independent-content-and-description-order-6.0.2"}
+feedparser = {git = "https://github.com/kurtmckee/feedparser"}
 feedgenerator = "*"
 falcon = "*"
 typing = "*"
