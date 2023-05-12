@@ -8,7 +8,7 @@ ENV PIPENV_VENV_IN_PROJECT yes
 COPY Pipfile Pipfile.lock feedmixer_api.py feedmixer_wsgi.py feedmixer.py /app/
 
 WORKDIR /app/
-RUN pipenv --three sync && apt purge
+RUN pipenv sync && apt purge
 RUN pipenv run pip3 install gunicorn
 
 # build layer without git:

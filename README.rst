@@ -90,7 +90,7 @@ Installation
    ``$ git clone https://github.com/cristoper/feedmixer.git``
 #. ``$ cd feedmixer``
 #. Recommended: use pipenv_ to create a virtualenv and install dependencies:
-   ``$ pipenv --three sync``
+   ``$ pipenv sync``
 
 The project consists of three modules:
 
