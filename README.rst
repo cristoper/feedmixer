@@ -113,6 +113,7 @@ defaults and a rotating logfile) as both `api` and `application` (default names
 used by common WSGI servers). To start the service with gunicorn_, for example,
 clone the repository and in the root directory run::
 
+$ pipenv sync
 $ pipenv run pip3 install gunicorn
 $ pipenv run gunicorn feedmixer_wsgi
 
