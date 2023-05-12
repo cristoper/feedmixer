@@ -4,12 +4,13 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-"shelfcache >=1.4.0" = {git = "git://github.com/cristoper/shelfcache.git"}
-feedparser = {ref = "no-independent-content-and-description-order", git = "git://github.com/cristoper/feedparser.git"}
+"shelfcache >=1.4.0" = {git = "https://github.com/cristoper/shelfcache.git"}
+feedparser = "~=6.0.1"
 feedgenerator = "*"
 django-jsonfeed = ">=0.2.0"
 falcon = "*"
 typing = "*"
+urllib3 = "==1.26.15"
 requests = "*"
 
 [dev-packages]
