@@ -10,6 +10,7 @@ Status
 Changelog
 ~~~~~~~~~
 
+- v2.3.2_ Update dependencies to use upstream feedparser now that the fix for `this bug <https://github.com/kurtmckee/feedparser/pull/260>`_ has been merged.
 - v2.3.1_ More consistent builds: update dependencies in Pipfile.lock (which also seems to work better with newer versions of pipenv) and pin Dockerfile base image to specific hash
 - v2.3.0_ Replace on-disk cache with in-memory cache. This simplifies application code and administration (don't have to worry about pruning the cache database)
 - v2.2.0_ Fix handling of RSS feeds with missing pubDates so that they sort to the bottom instead of throwing an exception during sorting
@@ -18,6 +19,7 @@ Changelog
 
 - v1.0.0_ Stable API. I'm using it in production for small personal "planet"-like feed aggregators.
 
+.. _v2.3.2: https://github.com/cristoper/feedmixer/tree/v2.3.2
 .. _v2.3.1: https://github.com/cristoper/feedmixer/tree/v2.3.1
 .. _v2.3.0: https://github.com/cristoper/feedmixer/tree/v2.3.0
 .. _v2.2.0: https://github.com/cristoper/feedmixer/tree/v2.2.0
