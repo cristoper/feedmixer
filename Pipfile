@@ -8,6 +8,7 @@ feedparser = {git = "https://github.com/kurtmckee/feedparser"}
 feedgenerator = "*"
 falcon = "*"
 typing = "*"
+urllib3 = "==1.26.15" #https://github.com/ionrock/cachecontrol/issues/292
 requests = "*"
 django-jsonfeed = "*"
 cachecontrol = "*"
