@@ -130,7 +130,7 @@ class MixedFeed:
         # dynamically find and call appropriate method based on ftype:
         method_name = "{}_feed".format(self.ftype)
         method = getattr(fm, method_name)
-        resp.body = method()
+        resp.text = method()
 
         if fm.error_urls:
             # There were errors; report them in the 'X-fm-errors' http header as
@@ -154,7 +154,7 @@ class MixedFeed:
 
 def wsgi_app(title='FeedMixer feed',
         desc='{type} feed created by FeedMixer.',
-        sess: requests.session=requests.session()) -> falcon.API:
+        sess: requests.session=requests.session()) -> falcon.App:
     """
     Creates the Falcon api object (a WSGI-compliant callable)
 
@@ -164,7 +164,7 @@ def wsgi_app(title='FeedMixer feed',
     rss = MixedFeed(ftype='rss', title=title, desc=desc, sess=sess)
     jsn = MixedFeed(ftype='json', title=title, desc=desc, sess=sess)
 
-    api = falcon.API()
+    api = falcon.App()
     api.add_route('/atom', atom)
     api.add_route('/rss', rss)
     api.add_route('/json', jsn)
