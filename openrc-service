@@ -1,0 +1,12 @@
+#!/sbin/openrc-run
+description="A self-hosted API to fetch and mix entries from Atom and RSS feeds (returns Atom, RSS, or JSON)"
+cd /var/www/feedmixer
+pidfile="/run/${RC_SVCNAME}.pid"
+command='pipenv'
+command_args='run gunicorn feedmixer_wsgi'
+command_user=feedmixer
+command_background=true
+
+depend() {
+	use net
+}
