@@ -15,4 +15,4 @@ def parse(url_file_stream_or_string: stream_str_t, etag: Optional[str]=None,
           Optional[str]=None, handlers: Optional[handlers_t]=None,
           request_headers: Optional[headers_t]=None, response_headers:
           Optional[headers_t]=None) -> feedparser.util.FeedParserDict:
-    ...
+    return feedparser.util.FeedParserDict()

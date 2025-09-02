@@ -94,7 +94,7 @@ class FeedMixer(object):
         prefer_summary=True,
         max_threads=10,
         max_feeds=100,
-        sess: requests.Session = None,
+        sess: Optional[requests.Session] = None,
     ) -> None:
         """
         __init__(self, title, link='', desc='', feeds=[], num_keep=3, \
@@ -126,7 +126,7 @@ class FeedMixer(object):
         self._num_keep = num_keep
         self.prefer_summary = prefer_summary
         self.max_threads = max_threads
-        self._mixed_entries = []  # type: List[Optional[dict]]
+        self._mixed_entries = []  # type: List[dict]
         self._error_urls = {}  # type: error_dict_t
         if sess is None:
             sess = requests.Session()
@@ -150,7 +150,7 @@ class FeedMixer(object):
         self.feeds = self._feeds
 
     @property
-    def mixed_entries(self) -> List[Optional[dict]]:
+    def mixed_entries(self) -> List[dict]:
         """
         The parsed feed entries fetched from the list of URLs in `feeds`.
         (Accessing the property triggers the feeds to be fetched if they
@@ -280,7 +280,7 @@ class FeedMixer(object):
     @staticmethod
     def extract_meta(
         parsed_entries: List[dict], prefer_summary=True
-    ) -> List[Optional[dict]]:
+    ) -> List[dict]:
         """
         Convert a FeedParserDict object into a dict compatible with the Django
         feedgenerator classes.
@@ -290,7 +290,7 @@ class FeedMixer(object):
             prefer_summary: If True, prefer the (short) 'summary'; otherwise
                 prefer the (long) 'content'.
         """
-        mixed_entries = []  # type: List[Optional[dict]]
+        mixed_entries = []  # type: List[dict]
         for e in parsed_entries:
             metadata = {}
 
