@@ -7,11 +7,15 @@ ENV PATH="/root/.local/bin:${PATH}"
 ENV LANG C.UTF-8
 ENV LC_ALL C.UTF-8
 COPY pyproject.toml uv.lock feedmixer_api.py feedmixer_wsgi.py feedmixer.py /app/
+COPY test /app/test
 
 WORKDIR /app/
 RUN uv venv && \
     uv sync && \
-    uv pip install gunicorn
+    uv pip install gunicorn && \
+    .venv/bin/python -m unittest discover test/unit && \
+    rm -rf test/ && \
+    find /app/.venv -type d -name __pycache__ -exec rm -rf {} +
 
 # build layer without git, pipx, or uv
 FROM python:3.13.7-slim-trixie
