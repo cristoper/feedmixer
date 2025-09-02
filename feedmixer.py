@@ -350,5 +350,8 @@ class FeedMixer(object):
         """
         gen = gen_cls(title=self.title, link=self.link, description=self.desc)
         for e in self.mixed_entries:
+            guid = e.get('unique_id', '')
+            if guid and not guid.startswith('http'):
+                e['unique_id_is_permalink'] = False
             gen.add_item(**e)
         return gen
