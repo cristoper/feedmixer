@@ -1,0 +1,24 @@
+[project]
+name = "feedmixer"
+version = "2.3.3"
+requires-python = ">=3.10"
+dependencies = [
+    "feedparser",
+    "feedgenerator",
+    "falcon",
+    "typing",
+    "urllib3",
+    "requests",
+    "django-jsonfeed",
+    "cachecontrol",
+]
+
+[dependency-groups]
+dev = []
+
+[tool.uv]
+package = false
+
+[[tool.uv.index]]
+name = "pypi"
+url = "https://pypi.org/simple"

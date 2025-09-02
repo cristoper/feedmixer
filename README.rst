@@ -10,6 +10,7 @@ Status
 Changelog
 ~~~~~~~~~
 
+- v2.4.0_ Migrate from pipenv to uv and update dependencies. `feedgenerator` now produces slightly different output including JSONFeed 1.1.
 - v2.3.2_ Update dependencies to use upstream feedparser now that the fix for `this bug <https://github.com/kurtmckee/feedparser/pull/260>`_ has been merged.
 - v2.3.1_ More consistent builds: update dependencies in Pipfile.lock (which also seems to work better with newer versions of pipenv) and pin Dockerfile base image to specific hash
 - v2.3.0_ Replace on-disk cache with in-memory cache. This simplifies application code and administration (don't have to worry about pruning the cache database)
@@ -49,6 +50,9 @@ n
 full
     If set to anything, prefer the full entry `content`; if absent, prefer the shorter entry `summary`.
 
+An OpenAPI specification is available in `openapi.yaml`_
+
+.. _openapi.yaml: openapi.yaml
 
 Features
 --------
@@ -80,7 +84,7 @@ FeedMixer does not (yet?) do any resource restriction itself:
 - Rate limiting
 - CORS restriction
 
-TO protect your installation either configure a front-end http proxy to take
+To protect your installation either configure a front-end http proxy to take
 care of your required restrictions (Nginx is a good choice), or/and use
 suitable WSGI middleware.
 
@@ -91,8 +95,10 @@ Installation
 #. Clone this repository:
    ``$ git clone https://github.com/cristoper/feedmixer.git``
 #. ``$ cd feedmixer``
-#. Recommended: use pipenv_ to create a virtualenv and install dependencies:
-   ``$ pipenv sync``
+#. Recommended: use uv_ to create a virtualenv and install dependencies:
+   ``$ uv venv``
+   ``$ . .venv/bin/activate``
+   ``$ uv sync``
 
 The project consists of three modules:
 
@@ -105,7 +111,7 @@ The project consists of three modules:
 .. _falcon: https://falconframework.org/
 .. _gunicorn: http://gunicorn.org/
 .. _`virtual environment`: https://virtualenv.pypa.io/en/stable/
-.. _pipenv: https://pipenv.readthedocs.io/en/latest/
+.. _uv: https://github.com/astral-sh/uv
 
 Run Locally
 ~~~~~~~~~~~
@@ -115,9 +121,11 @@ defaults and a rotating logfile) as both `api` and `application` (default names
 used by common WSGI servers). To start the service with gunicorn_, for example,
 clone the repository and in the root directory run::
 
-$ pipenv sync
-$ pipenv run pip3 install gunicorn
-$ pipenv run gunicorn feedmixer_wsgi
+$ uv venv
+$ . .venv/bin/activate
+$ uv sync
+$ uv pip install gunicorn
+$ gunicorn feedmixer_wsgi
 
 Note that the top-level install directory must be writable by the server
 running the app, because it creates the logfiles ('fm.log' and 'fm.log.1')
@@ -215,7 +223,7 @@ $ docker build . -t feedmixer
 
 Run it in the foreground::
 
-$ docker run -p 8000:8000 feedmixer
+$ docker run -p --rm 8000:8000 feedmixer
 
 Now from another terminal you should be able to connect to FeedMixer on
 localhost port 8000 just as in the example above.
@@ -242,9 +250,9 @@ Documentation
 Other than this README, the documentation is in the docstrings. To build a
 pretty version (HTML) using Sphinx:
 
-1. Install Sphinx dependencies: ``$ pipenv run pip install -r doc/requirements.txt``
+1. Install Sphinx dependencies: ``$ uv pip install -r doc/requirements.txt``
 2. Change to `doc/` directory: ``$ cd doc``
-3. Build: ``$ pipenv run make html``
+3. Build: ``$ make html``
 4. View: ``$ x-www-browser _build/html/index.html``
 
 Tests
@@ -252,7 +260,7 @@ Tests
 
 Tests are in the `test` directory and Python will find and run them with::
 
-$ pipenv run python3 -m unittest
+$ python3 -m unittest
 
 Typechecking
 ~~~~~~~~~~~~

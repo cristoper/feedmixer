@@ -1,31 +1,29 @@
-FROM bitnami/minideb@sha256:03d145bf50918df2acd08346c600b0688f8b16521b5ea462f6b503fe3a2f010d as install
+# FROM debian:trixie-20250811-slim as install
+FROM python:3.13.7-slim-trixie as install
 
-RUN install_packages python3-pip git
-RUN pip3 --no-cache-dir install pipenv
+RUN apt-get update && apt-get install -y --no-install-recommends pipx git && rm -rf /var/lib/apt/lists/*
+RUN pipx install uv
+ENV PATH="/root/.local/bin:${PATH}"
 ENV LANG C.UTF-8
 ENV LC_ALL C.UTF-8
-ENV PIPENV_VENV_IN_PROJECT yes
-COPY Pipfile Pipfile.lock feedmixer_api.py feedmixer_wsgi.py feedmixer.py /app/
+COPY pyproject.toml uv.lock feedmixer_api.py feedmixer_wsgi.py feedmixer.py /app/
 
 WORKDIR /app/
-RUN pipenv sync && apt purge
-RUN pipenv run pip3 install gunicorn
+RUN uv venv && \
+    uv sync && \
+    uv pip install gunicorn
 
-# build layer without git:
-# (we still need pip because newer pipenv apparently depend on it)
-FROM bitnami/minideb@sha256:03d145bf50918df2acd08346c600b0688f8b16521b5ea462f6b503fe3a2f010d
+# build layer without git, pipx, or uv
+FROM python:3.13.7-slim-trixie
 ENV LANG C.UTF-8
 ENV LC_ALL C.UTF-8
-ENV PIPENV_VENV_IN_PROJECT yes
 
-RUN install_packages python3-pip python3-distutils
 copy --from=install /app/ /app
-copy --from=install /usr/local/lib/python3.9/dist-packages/ /usr/local/lib/python3.9/dist-packages/
-copy --from=install /usr/local/bin/pipenv /usr/local/bin/pipenv
 
-RUN chown nobody /app/
+RUN chown -R nobody /app/
 WORKDIR /app/
 
+ENV PATH="/app/.venv/bin/:$PATH"
 USER nobody
-ENTRYPOINT ["pipenv", "run", "gunicorn"]
+ENTRYPOINT ["gunicorn"]
 CMD ["-b", ":8000", "feedmixer_wsgi"]
