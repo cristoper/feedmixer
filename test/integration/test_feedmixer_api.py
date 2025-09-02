@@ -72,8 +72,8 @@ class TestAtom(FMTestCase):
         self.assertIsNone(errors)
 
     def test_prefer_summary(self):
-        qs = build_qs(feeds=['http://americancynic.net/atom.xml'], n=1)
-        qs_full = build_qs(feeds=['http://americancynic.net/atom.xml'], n=1,
+        qs = build_qs(feeds=['http://catswhisker.xyz/atom.xml'], n=1)
+        qs_full = build_qs(feeds=['http://catswhisker.xyz/atom.xml'], n=1,
                            full=True)
         result, _ = self.get_results_errors(path='/atom', qs=qs)
         result_full, _ = self.get_results_errors(path='/atom', qs=qs_full)
