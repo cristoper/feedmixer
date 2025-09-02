@@ -1,0 +1,131 @@
+openapi: 3.0.0
+info:
+  title: FeedMixer API
+  description: |-
+    FeedMixer is a WSGI web service that takes a list of feed URLs and returns
+    a new feed consisting of the most recent `n` entries from each provided
+    feed.
+  version: "1.0.0"
+
+servers:
+  - url: http://localhost:8000
+    description: Local development server
+
+paths:
+  /atom:
+    get:
+      summary: Get a mixed feed in Atom format
+      description: Returns a combined Atom feed from the provided source feed URLs.
+      operationId: getAtomFeed
+      parameters:
+        - $ref: '#/components/parameters/feedUrls'
+        - $ref: '#/components/parameters/numKeep'
+        - $ref: '#/components/parameters/fullContent'
+      responses:
+        '200':
+          description: An Atom feed. Errors fetching individual feeds are reported in the `X-fm-errors` header.
+          headers:
+            X-fm-errors:
+              $ref: '#/components/headers/X-fm-errors'
+          content:
+            application/atom+xml:
+              schema:
+                type: string
+                format: xml
+                example: '<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom">...</feed>'
+
+  /rss:
+    get:
+      summary: Get a mixed feed in RSS format
+      description: Returns a combined RSS 2.0 feed from the provided source feed URLs.
+      operationId: getRssFeed
+      parameters:
+        - $ref: '#/components/parameters/feedUrls'
+        - $ref: '#/components/parameters/numKeep'
+        - $ref: '#/components/parameters/fullContent'
+      responses:
+        '200':
+          description: An RSS feed. Errors fetching individual feeds are reported in the `X-fm-errors` header.
+          headers:
+            X-fm-errors:
+              $ref: '#/components/headers/X-fm-errors'
+          content:
+            application/rss+xml:
+              schema:
+                type: string
+                format: xml
+                example: '<?xml version="1.0" encoding="utf-8"?><rss version="2.0"><channel>...</channel></rss>'
+
+  /json:
+    get:
+      summary: Get a mixed feed in JSON Feed format
+      description: Returns a combined feed in JSON Feed format from the provided source feed URLs.
+      operationId: getJsonFeed
+      parameters:
+        - $ref: '#/components/parameters/feedUrls'
+        - $ref: '#/components/parameters/numKeep'
+        - $ref: '#/components/parameters/fullContent'
+      responses:
+        '200':
+          description: A JSON feed conforming to the JSON Feed standard. Errors fetching individual feeds are reported in the `X-fm-errors` header.
+          headers:
+            X-fm-errors:
+              $ref: '#/components/headers/X-fm-errors'
+          content:
+            application/json:
+              schema:
+                type: object
+                externalDocs:
+                  description: JSON Feed Version 1.1 Specification
+                  url: https://www.jsonfeed.org/version/1.1/
+              example:
+                version: "https://jsonfeed.org/version/1"
+                title: "FeedMixer feed"
+                home_page_url: "http://localhost:8000/json?f=http%3A%2F%2Fhnrss.org%2Fnewest&n=1"
+                description: "json feed created by FeedMixer."
+                items:
+                  - title: "Example Post"
+                    content_html": "<p>Hello, world!</p>"
+                    url: "https://example.org/hello-world"
+                    id: "https://example.org/hello-world"
+                    date_published: "2020-01-23T03:32:19Z"
+
+components:
+  parameters:
+    feedUrls:
+      name: f
+      in: query
+      description: URL of a feed to include. Can be specified multiple times for multiple feeds.
+      required: false
+      schema:
+        type: array
+        items:
+          type: string
+          format: uri
+      style: form
+      explode: true
+    numKeep:
+      name: n
+      in: query
+      description: The number of entries to keep from each feed. A value of `0` keeps all entries.
+      required: false
+      schema:
+        type: integer
+        default: 0
+    fullContent:
+      name: full
+      in: query
+      description: If set, prefer the full entry `content`; otherwise prefer the shorter entry `summary`.
+      required: false
+      schema:
+        type: boolean
+        default: false
+
+  headers:
+    X-fm-errors:
+      description: |
+        Reports errors encountered while fetching or parsing feeds.
+        If feeds fail, the value is a URL-encoded JSON object where keys are the failing URLs and values are the error messages.
+        If no feeds are provided via the 'f' parameter, it contains a JSON-encoded error string.
+      schema:
+        type: string
