@@ -298,7 +298,7 @@ and other open-source projects by making a small (like a tip) one-time
 donation: `donate via PayPal <https://www.paypal.me/cristoper/5>`_
 
 If you're looking to contract a Python developer, I might be able to help.
-Contact me at chris.burkhardt@orangenoiseproduction.com
+Contact me at chris@onpc.xyz
 
 
 License
