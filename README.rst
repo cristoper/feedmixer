@@ -10,7 +10,7 @@ Status
 Changelog
 ~~~~~~~~~
 
-- v2.4.1_ Fix bug where RSS dates were potentially sorted incorrectly (d685db15)
+- v2.4.1_ Fix bug where RSS dates were potentially sorted incorrectly (d685db15_)
 - v2.4.0_ Migrate from pipenv to uv and update dependencies. `feedgenerator` now produces slightly different output including JSONFeed 1.1.
 - v2.3.2_ Update dependencies to use upstream feedparser now that the fix for `this bug <https://github.com/kurtmckee/feedparser/pull/260>`_ has been merged.
 - v2.3.1_ More consistent builds: update dependencies in Pipfile.lock (which also seems to work better with newer versions of pipenv) and pin Dockerfile base image to specific hash
@@ -32,6 +32,7 @@ Changelog
 .. _`JSON FEED version 1`: https://jsonfeed.org/
 .. _`v1 branch`: https://github.com/cristoper/feedmixer/tree/v1
 .. _v1.0.0: https://github.com/cristoper/feedmixer/tree/v1.0.0
+.. _d685db15: https://github.com/cristoper/feedmixer/commit/d685db15ab82d5c4268240aef7eedae051d7a2db
 
 
 API
