@@ -1,10 +1,10 @@
+.dockerignore
 *.sw[po]
 *.pyc
 __pycache__
-fmcache.db
-fmcache
-venv
-.ropeproject
+/.venv
 doc/_build
-fm.log
+fm.log*
 .aider*
+/tags
+.mypy_cache/
