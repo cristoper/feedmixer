@@ -55,7 +55,7 @@ import datetime
 import functools
 import logging
 from concurrent.futures import ThreadPoolExecutor
-from typing import Dict, List, Optional, Type, Union
+from typing import Dict, List, Optional, Type, TypedDict, Union
 
 # https://docs.djangoproject.com/en/1.10/_modules/django/utils/feedgenerator/
 import feedgenerator
@@ -68,11 +68,30 @@ from jsonfeed import JSONFeed
 # Memoize results from parser
 # TODO: make maxsize user-configurable
 @functools.lru_cache(maxsize=128)
-def cache_parser(text):
+def cache_parser(text: str) -> feedparser.util.FeedParserDict:
     return feedparser.parse(text)
 
 
 # Types:
+class EntryMetadata(TypedDict, total=False):
+    title: str
+    link: str
+    description: str
+    author_email: Optional[str]
+    author_name: Optional[str]
+    author_link: Optional[str]
+    feed_link: str
+    feed_title: str
+    pubdate: datetime.datetime
+    updateddate: datetime.datetime
+    comments: Optional[str]
+    unique_id: Optional[str]
+    item_copyright: Optional[str]
+    categories: List[str]
+    enclosures: List[feedgenerator.Enclosure]
+    enclosure: feedgenerator.Enclosure
+    unique_id_is_permalink: bool
+
 class ParseError(Exception):
     pass
 
@@ -89,7 +108,7 @@ class FeedMixer(object):
         title="Title",
         link="",
         desc="",
-        feeds: List[Optional[str]] = [],
+        feeds: List[str] = [],
         num_keep=3,
         prefer_summary=True,
         max_threads=10,
@@ -126,7 +145,7 @@ class FeedMixer(object):
         self._num_keep = num_keep
         self.prefer_summary = prefer_summary
         self.max_threads = max_threads
-        self._mixed_entries = []  # type: List[dict]
+        self._mixed_entries = []  # type: List[EntryMetadata]
         self._error_urls = {}  # type: error_dict_t
         if sess is None:
             sess = requests.Session()
@@ -150,7 +169,7 @@ class FeedMixer(object):
         self.feeds = self._feeds
 
     @property
-    def mixed_entries(self) -> List[dict]:
+    def mixed_entries(self) -> List[EntryMetadata]:
         """
         The parsed feed entries fetched from the list of URLs in `feeds`.
         (Accessing the property triggers the feeds to be fetched if they
@@ -170,14 +189,14 @@ class FeedMixer(object):
         return self._error_urls
 
     @property
-    def feeds(self) -> list:
+    def feeds(self) -> List[str]:
         """
         Get or set list of feeds.
         """
         return self._feeds
 
     @feeds.setter
-    def feeds(self, value: List[Optional[str]]) -> None:
+    def feeds(self, value: List[str]) -> None:
         """
         Reset _mixed_entries whenever we get a new list of feeds.
         """
@@ -215,10 +234,10 @@ class FeedMixer(object):
         `feedgernerator`-compatible metadata, and then stores the list of
         entries as `self.mixed_entries`
         """
-        parsed_entries = []  # type: List[dict]
+        parsed_entries = []  # type: List[feedparser.util.FeedParserDict]
         self._error_urls = {}
 
-        def fetch(url):
+        def fetch(url: str) -> requests.Response:
             r = self.sess.get(url)
             r.raise_for_status()
             # NOTE: I tried doing the parsing here in the threads, but it was
@@ -239,7 +258,7 @@ class FeedMixer(object):
                     logger.info("Got feed from feedparser {}".format(url))
                     # logger.debug("Feed: {}".format(f))
 
-                    parse_err = len(f.get("entries")) == 0 and f.get("bozo")
+                    parse_err = len(f.get("entries") or []) == 0 and f.get("bozo")
                     if f is None or parse_err:
                         logger.info("Parse error ({})".format(f.get("bozo_exception")))
                         raise ParseError(
@@ -279,8 +298,8 @@ class FeedMixer(object):
 
     @staticmethod
     def extract_meta(
-        parsed_entries: List[dict], prefer_summary=True
-    ) -> List[dict]:
+        parsed_entries: List[feedparser.util.FeedParserDict], prefer_summary=True
+    ) -> List[EntryMetadata]:
         """
         Convert a FeedParserDict object into a dict compatible with the Django
         feedgenerator classes.
@@ -290,9 +309,9 @@ class FeedMixer(object):
             prefer_summary: If True, prefer the (short) 'summary'; otherwise
                 prefer the (long) 'content'.
         """
-        mixed_entries = []  # type: List[dict]
+        mixed_entries = []  # type: List[EntryMetadata]
         for e in parsed_entries:
-            metadata = {}
+            metadata: EntryMetadata = {}
 
             # title, link, and description are mandatory
             metadata["title"] = e.get("title", "")
@@ -308,7 +327,7 @@ class FeedMixer(object):
                 content = summary or content
             else:
                 content = content or summary
-            metadata["description"] = content
+            metadata["description"] = content or ""
 
             if "author_detail" in e:
                 metadata["author_email"] = e["author_detail"].get("email")
