@@ -51,17 +51,18 @@ from a client programatically, remember to URL-encode the `f` fields::
 Interface
 ---------
 """
-from feedmixer import FeedMixer
-import requests
-import falcon
-from typing import NamedTuple, List
+
 import json
 import urllib
 import urllib.parse
+from typing import List, NamedTuple
 
-ParsedQS = NamedTuple('ParsedQS', [('f', List[str]),
-                                   ('n', int),
-                                   ('full', bool)])
+import falcon
+import requests
+
+from feedmixer import FeedMixer
+
+ParsedQS = NamedTuple("ParsedQS", [("f", List[str]), ("n", int), ("full", bool)])
 
 
 def parse_qs(req: falcon.Request) -> ParsedQS:
@@ -71,21 +72,22 @@ def parse_qs(req: falcon.Request) -> ParsedQS:
     :param req: the Falcon request from which to parse the query string.
     """
     qs = falcon.uri.parse_query_string(req.query_string)
-    feeds = qs.get('f', [])
+    feeds = qs.get("f", [])
     if len(feeds) == 0:
-        feeds = qs.get('F', [])
-    n = qs.get('n', 0)
+        feeds = qs.get("F", [])
+    n = qs.get("n", 0)
     if n == 0:
-        n = qs.get('N', 0)
+        n = qs.get("N", 0)
     try:
         int_n = int(n)
     except ValueError as e:
-        e.args = ('Could not parse the n parameter', *e.args)
+        e.args = ("Could not parse the n parameter", *e.args)
         raise
-    full = qs.get('full', False)
+    full = qs.get("full", False)
     if not full:
-        full = qs.get('FULL', False)
-    if not isinstance(feeds, list): feeds = [feeds] # NOQA
+        full = qs.get("FULL", False)
+    if not isinstance(feeds, list):
+        feeds = [feeds]  # NOQA
     return ParsedQS(feeds, int_n, bool(full))
 
 
@@ -97,9 +99,14 @@ class MixedFeed:
     Any errors that occur are returned in a custom HTTP header ('X-fm-errors')
     as a JSON hash.
     """
-    def __init__(self, ftype='atom', title='FeedMixer feed',
-                 desc='{type} feed created by FeedMixer.',
-                 sess: requests.session=requests.session()) -> None:
+
+    def __init__(
+        self,
+        ftype="atom",
+        title="FeedMixer feed",
+        desc="{type} feed created by FeedMixer.",
+        sess: requests.session = requests.session(),
+    ) -> None:
         """
         :param ftype: one of 'atom', 'rss', or 'json'
         :param title: the title of the generated feed
@@ -120,12 +127,20 @@ class MixedFeed:
 
         # Let app know if no feeds were given
         if len(feeds) == 0:
-            resp.append_header('X-fm-errors', '"No feeds were provided in query string 'f' parameters."')
+            resp.append_header(
+                "X-fm-errors", f'"No feeds were provided in query string  parameters."'
+            )
 
         summ = not full
-        fm = FeedMixer(feeds=feeds, num_keep=n, prefer_summary=summ,
-                       title=self.title, desc=self.desc, link=req.uri,
-                       sess=self.sess)
+        fm = FeedMixer(
+            feeds=feeds,
+            num_keep=n,
+            prefer_summary=summ,
+            title=self.title,
+            desc=self.desc,
+            link=req.uri,
+            sess=self.sess,
+        )
 
         # dynamically find and call appropriate method based on ftype:
         method_name = "{}_feed".format(self.ftype)
@@ -138,13 +153,13 @@ class MixedFeed:
             error_dict = {}
             for url, e in fm.error_urls.items():
                 err_str = str(e)
-                if hasattr(e, 'status'):
+                if hasattr(e, "status"):
                     err_str += " ({})".format(e.status)
                 error_dict[url] = err_str
             json_err = urllib.parse.quote(json.dumps(error_dict))
-            resp.append_header('X-fm-errors', json_err)
+            resp.append_header("X-fm-errors", json_err)
 
-        if self.ftype == 'json':
+        if self.ftype == "json":
             # special case content_type for JSON
             resp.content_type = "application/json"
         else:
@@ -152,20 +167,22 @@ class MixedFeed:
         resp.status = falcon.HTTP_200
 
 
-def wsgi_app(title='FeedMixer feed',
-        desc='{type} feed created by FeedMixer.',
-        sess: requests.session=requests.session()) -> falcon.App:
+def wsgi_app(
+    title="FeedMixer feed",
+    desc="{type} feed created by FeedMixer.",
+    sess: requests.session = requests.session(),
+) -> falcon.App:
     """
     Creates the Falcon api object (a WSGI-compliant callable)
 
     See `FeedMixer` docstring for parameter descriptions.
     """
-    atom = MixedFeed(ftype='atom', title=title, desc=desc, sess=sess)
-    rss = MixedFeed(ftype='rss', title=title, desc=desc, sess=sess)
-    jsn = MixedFeed(ftype='json', title=title, desc=desc, sess=sess)
+    atom = MixedFeed(ftype="atom", title=title, desc=desc, sess=sess)
+    rss = MixedFeed(ftype="rss", title=title, desc=desc, sess=sess)
+    jsn = MixedFeed(ftype="json", title=title, desc=desc, sess=sess)
 
     api = falcon.App()
-    api.add_route('/atom', atom)
-    api.add_route('/rss', rss)
-    api.add_route('/json', jsn)
+    api.add_route("/atom", atom)
+    api.add_route("/rss", rss)
+    api.add_route("/json", jsn)
     return api
