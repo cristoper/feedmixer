@@ -53,19 +53,16 @@ Interface
 import concurrent.futures
 import datetime
 import functools
-import json
 import logging
 from concurrent.futures import ThreadPoolExecutor
-from typing import Callable, Dict, List, Optional, Type, Union
+from typing import Dict, List, Optional, Type, Union
 
 # https://docs.djangoproject.com/en/1.10/_modules/django/utils/feedgenerator/
 import feedgenerator
 import feedparser
 import requests
 from feedgenerator import Atom1Feed, Rss201rev2Feed, SyndicationFeed
-from feedparser.util import FeedParserDict
 from jsonfeed import JSONFeed
-from requests.exceptions import RequestException
 
 
 # Memoize results from parser
