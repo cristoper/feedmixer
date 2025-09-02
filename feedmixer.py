@@ -289,7 +289,7 @@ class FeedMixer(object):
 
         # sort entries by published date (with fall back to updated date)
         parsed_entries.sort(
-            key=lambda e: e.get("published") or e.get("updated") or "", reverse=True
+            key=lambda e: e.get("published_parsed") or e.get("updated_parsed") or (0,) * 9, reverse=True
         )
 
         # extract metadata into a form usable by feedgenerator

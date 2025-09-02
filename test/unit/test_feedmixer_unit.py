@@ -18,6 +18,39 @@ with open(RSS_PATH, 'r') as f:
     TEST_RSS = ''.join(f.readlines())
 
 
+TEST_RSS_RFC822 = """<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+<channel>
+  <link>https://example.org</link>
+  <description>desc</description>
+  <atom:link href="https://example.org" rel="self" type="application/rss+xml"></atom:link>
+<title>Test RFC822 Feed</title>
+<item>
+  <title>Middle Entry</title>
+  <link>http://example.com/middle</link>
+  <guid>http://example.com/middle</guid>
+  <pubDate>Wed, 02 Oct 2002 09:00:00 EST</pubDate>
+  <description>Middle</description>
+</item>
+<item>
+  <title>Newest Entry</title>
+  <link>http://example.com/newest</link>
+  <guid>http://example.com/newest</guid>
+  <pubDate>Wed, 02 Oct 2002 15:00:00 GMT</pubDate>
+  <description>Newest</description>
+</item>
+<item>
+  <title>Oldest Entry</title>
+  <link>http://example.com/oldest</link>
+  <guid>http://example.com/oldest</guid>
+  <pubDate>Wed, 02 Oct 2002 11:00:00 GMT</pubDate>
+  <description>Oldest</description>
+</item>
+</channel>
+</rss>
+"""
+
+
 def build_response(status=OK, etag='etag', modified='modified', max_age=None):
     """Make a requests.Response object suitable for testing.
     Args:
@@ -51,6 +84,10 @@ def build_stub_session():
         elif url == "rss":
             resp = MagicMock()
             resp.text = TEST_RSS
+            return resp
+        elif url == "rfc822_rss":
+            resp = MagicMock()
+            resp.text = TEST_RSS_RFC822
             return resp
         else:
             resp = MagicMock(spec=requests.Response)
@@ -184,6 +221,18 @@ class TestMixedEntries(unittest.TestCase):
         me = fm.mixed_entries
         mc.get.assert_called_once_with('atom')
         self.assertIn('author_name', me[0])
+
+    def test_sort_rfc822_dates(self):
+        """
+        Test that entries with RFC 822 dates are sorted correctly.
+        """
+        mc = build_stub_session()
+        fm = FeedMixer(feeds=['rfc822_rss'], num_keep=3, sess=mc)
+        me = fm.mixed_entries
+        self.assertEqual(len(me), 3)
+        self.assertEqual(me[0]['title'], 'Newest Entry')
+        self.assertEqual(me[1]['title'], 'Middle Entry')
+        self.assertEqual(me[2]['title'], 'Oldest Entry')
 
 
 class TestFeed(unittest.TestCase):
