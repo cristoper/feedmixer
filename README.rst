@@ -20,6 +20,7 @@ Changelog
 
 - v1.0.0_ Stable API. I'm using it in production for small personal "planet"-like feed aggregators.
 
+.. _v2.4.0: https://github.com/cristoper/feedmixer/tree/v2.4.0
 .. _v2.3.2: https://github.com/cristoper/feedmixer/tree/v2.3.2
 .. _v2.3.1: https://github.com/cristoper/feedmixer/tree/v2.3.1
 .. _v2.3.0: https://github.com/cristoper/feedmixer/tree/v2.3.0
