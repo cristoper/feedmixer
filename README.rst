@@ -228,6 +228,15 @@ $ docker run -p --rm 8000:8000 feedmixer
 Now from another terminal you should be able to connect to FeedMixer on
 localhost port 8000 just as in the example above.
 
+The Dockerfile is based on alpine linux and produces an image that is about
+60MB.
+
+If you have issue building the docker image, you can try the included
+Debian-based Dockerfile (which produces an image about twice the size of the
+alpine Dockerfile):
+
+$ docker build . -t feedmixer-debian -f Dockerfile-debian
+$ docker run --rm -p 8000:8000 feedmixer-debian
 
 Troubleshooting
 ---------------

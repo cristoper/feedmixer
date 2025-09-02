@@ -1,10 +1,7 @@
-# Build stage
-FROM python:3.13.7-alpine as install
+# FROM debian:trixie-20250811-slim as install
+FROM python:3.13.7-slim-trixie as install
 
-# Install build dependencies, git, and pipx.
-# Some Python packages may need to be compiled from source on Alpine/musl.
-RUN apk add --no-cache build-base git pipx
-
+RUN apt-get update && apt-get install -y --no-install-recommends pipx git && rm -rf /var/lib/apt/lists/*
 RUN pipx install uv
 ENV PATH="/root/.local/bin:${PATH}"
 ENV LANG C.UTF-8
@@ -13,20 +10,19 @@ COPY pyproject.toml uv.lock feedmixer_api.py feedmixer_wsgi.py feedmixer.py /app
 COPY test /app/test
 
 WORKDIR /app/
-# Create virtual env, install dependencies, run tests, and then remove pycache files to save space.
 RUN uv venv && \
-    uv sync --dev && \
+    uv sync && \
     uv pip install gunicorn && \
     .venv/bin/python -m unittest discover test/unit && \
     rm -rf test/ && \
     find /app/.venv -type d -name __pycache__ -exec rm -rf {} +
 
-# Final stage
-FROM python:3.13.7-alpine
+# build layer without git, pipx, or uv
+FROM python:3.13.7-slim-trixie
 ENV LANG C.UTF-8
 ENV LC_ALL C.UTF-8
 
-COPY --from=install /app/ /app
+copy --from=install /app/ /app
 
 RUN chown -R nobody /app/
 WORKDIR /app/
