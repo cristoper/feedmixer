@@ -95,71 +95,6 @@ care of your required restrictions (Nginx is a good choice), or/and use
 suitable WSGI middleware.
 
 
-CORS
-------------
-
-The included web interface (`html/feedmixer.html`) is a separate frontend
-application. For it to communicate with the API during local development, the API
-must send Cross-Origin Resource Sharing (CORS) headers. This is necessary if
-you serve the HTML file from a different origin (protocol, domain, or port)
-than the API.
-
-To enable this for development, set the ``FM_ALLOW_CORS`` environment variable
-to any non-empty value when launching the server.
-
-For example:
-
-.. code-block:: bash
-
-   $ FM_ALLOW_CORS=1 gunicorn feedmixer_wsgi
-
-When this variable is set, the API will include the
-``Access-Control-Allow-Origin: *`` header in all responses, allowing the frontend
-to make requests from any origin.
-
-In a production environment, it is recommended to configure a front-end reverse
-proxy like Nginx to set the appropriate CORS headers instead of relying on this
-environment variable. This provides more control and keeps application
-configuration separate from deployment-specific concerns.
-
-
-Logging
-------------
-
-The log level can be configured via the ``FM_LOG_LEVEL`` environment variable.
-Valid values are ``DEBUG``, ``INFO``, ``WARNING``, ``ERROR``, ``CRITICAL``. The
-default is ``INFO``.
-
-For example:
-
-.. code-block:: bash
-
-   $ FM_LOG_LEVEL=DEBUG gunicorn feedmixer_wsgi
-
-
-Timeout
-------------
-
-The timeout for fetching remote feeds can be configured with the ``FM_TIMEOUT``
-environment variable. The value is in seconds, and the default is ``30``.
-
-.. code-block:: bash
-
-   $ FM_TIMEOUT=12 gunicorn feedmixer_wsgi
-
-
-Cache Size
-------------
-
-The maximum number of parsed feeds to keep in the in-memory cache can be
-configured with the ``FM_CACHE_SIZE`` environment variable. The value is an
-integer, and the default is ``128``.
-
-.. code-block:: bash
-
-   $ FM_CACHE_SIZE=256 gunicorn feedmixer_wsgi
-
-
 Installation
 ------------
 
@@ -310,6 +245,74 @@ alpine Dockerfile):
 
 $ docker build . -t feedmixer-debian -f Dockerfile-debian
 $ docker run --rm -p 8000:8000 feedmixer-debian
+
+Configure
+---------
+
+CORS
+~~~~
+
+In order to access the `feedmixer` server from a JavaScript application, both
+the API must be accessible from the same origin (protocol, domain, or port) as
+the web client or browsers will not allow the connection to be made.
+
+To get around this, the `feedmixer` server can set CORS headers to allow
+connections from different origins. To enable this for development, set the
+``FM_ALLOW_CORS`` environment variable to any non-empty value when launching
+the server.
+
+For example:
+
+.. code-block:: bash
+
+   $ FM_ALLOW_CORS=1 gunicorn feedmixer_wsgi
+
+When this variable is set, the API will include the
+``Access-Control-Allow-Origin: *`` header in all responses, allowing the frontend
+to make requests from any origin.
+
+In a production environment, it is recommended to configure a front-end reverse
+proxy like Nginx to set the appropriate CORS headers instead of relying on this
+environment variable. This provides more control and keeps application
+configuration separate from deployment-specific concerns.
+
+
+Logging
+~~~~~~~
+
+The log level can be configured via the ``FM_LOG_LEVEL`` environment variable.
+Valid values are ``DEBUG``, ``INFO``, ``WARNING``, ``ERROR``, ``CRITICAL``. The
+default is ``INFO``.
+
+For example:
+
+.. code-block:: bash
+
+   $ FM_LOG_LEVEL=DEBUG gunicorn feedmixer_wsgi
+
+
+Request Timeout
+~~~~~~~~~~~~~~~
+
+The http timeout for fetching remote feeds can be configured with the ``FM_TIMEOUT``
+environment variable. The value is in seconds, and the default is ``30``.
+
+.. code-block:: bash
+
+   $ FM_TIMEOUT=12 gunicorn feedmixer_wsgi
+
+
+Cache Size
+~~~~~~~~~~
+
+The maximum number of parsed feeds to keep in the in-memory cache can be
+configured with the ``FM_CACHE_SIZE`` environment variable. The value is an
+integer, and the default is ``128``.
+
+.. code-block:: bash
+
+   $ FM_CACHE_SIZE=256 gunicorn feedmixer_wsgi
+
 
 Troubleshooting
 ---------------
