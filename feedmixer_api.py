@@ -55,12 +55,12 @@ Interface
 import json
 import urllib
 import urllib.parse
-from typing import List, NamedTuple
+from typing import List, NamedTuple, Optional
 
 import falcon
 import requests
 
-from feedmixer import DEFAULT_TIMEOUT, FeedMixer
+from feedmixer import DEFAULT_TIMEOUT, FeedMixer 
 
 
 class CORSComponent:
@@ -108,17 +108,21 @@ class MixedFeed:
 
     def __init__(
         self,
-        ftype="atom",
-        title="FeedMixer feed",
-        desc="{type} feed created by FeedMixer.",
+        ftype: str = "atom",
+        title: str = "FeedMixer feed",
+        desc: str = "{type} feed created by FeedMixer.",
         sess: requests.session = requests.session(),
         timeout: int = DEFAULT_TIMEOUT,
+        parser_cache = None,
     ) -> None:
         """
         :param ftype: one of 'atom', 'rss', or 'json'
         :param title: the title of the generated feed
         :param desc: description of the generated feed (the '{type}' formatting
             parameter will be replaced by the value of `ftype`)
+        :param sess: the requests.session object to use for making http GET requests.
+        :param timeout: the timeout for http requests in seconds.
+        :param parser_cache: A functools.lru_cache-wrapped feedparser.parse function for application-wide caching.
         """
         super().__init__()
         self.ftype = ftype
@@ -126,6 +130,7 @@ class MixedFeed:
         self.desc = desc.format(type=ftype)
         self.sess = sess
         self.timeout = timeout
+        self.parser_cache = parser_cache
 
     def on_get(self, req: falcon.Request, resp: falcon.Response) -> None:
         """
@@ -149,6 +154,7 @@ class MixedFeed:
             link=req.uri,
             sess=self.sess,
             timeout=self.timeout,
+            parser_cache=self.parser_cache,
         )
 
         # dynamically find and call appropriate method based on ftype:
@@ -182,15 +188,16 @@ def wsgi_app(
     sess: requests.session = requests.session(),
     allow_cors: bool = False,
     timeout: int = DEFAULT_TIMEOUT,
+    parser_cache = None,
 ) -> falcon.App:
     """
     Creates the Falcon api object (a WSGI-compliant callable)
 
     See `FeedMixer` docstring for parameter descriptions.
     """
-    atom = MixedFeed(ftype="atom", title=title, desc=desc, sess=sess, timeout=timeout)
-    rss = MixedFeed(ftype="rss", title=title, desc=desc, sess=sess, timeout=timeout)
-    jsn = MixedFeed(ftype="json", title=title, desc=desc, sess=sess, timeout=timeout)
+    atom = MixedFeed(ftype="atom", title=title, desc=desc, sess=sess, timeout=timeout, parser_cache=parser_cache)
+    rss = MixedFeed(ftype="rss", title=title, desc=desc, sess=sess, timeout=timeout, parser_cache=parser_cache)
+    jsn = MixedFeed(ftype="json", title=title, desc=desc, sess=sess, timeout=timeout, parser_cache=parser_cache)
 
     middleware = []
     if allow_cors:

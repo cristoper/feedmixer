@@ -1,3 +1,4 @@
+import functools
 import unittest
 from unittest.mock import MagicMock, call
 
@@ -5,7 +6,7 @@ import feedparser
 import requests
 from requests.exceptions import RequestException
 
-from feedmixer import DEFAULT_TIMEOUT, FeedMixer, ParseError, cache_parser
+from feedmixer import DEFAULT_TIMEOUT, FeedMixer, ParseError
 
 ATOM_PATH = "test/test_atom.xml"
 RSS_PATH = "test/test_rss2.xml"
@@ -129,12 +130,19 @@ class TestMixedEntries(unittest.TestCase):
         Test that calls to the parser are memoized
         """
         mc = build_stub_session()
-        cache_parser.cache_clear()
-        fm = FeedMixer(feeds=["atom"], num_keep=2, sess=mc)
-        me = fm.mixed_entries
-        fm = FeedMixer(feeds=["atom"], num_keep=2, sess=mc)
-        me = fm.mixed_entries
-        hits, misses, _, _ = cache_parser.cache_info()
+        test_parser_cache = functools.lru_cache(maxsize=128)(feedparser.parse)
+
+        # Call 1: This should be a miss for cache_parser
+        fm = FeedMixer(feeds=["atom"], num_keep=2, sess=mc, parser_cache=test_parser_cache)
+        _ = fm.mixed_entries # This triggers __fetch_entries and calls cache_parser
+        hits, misses, _, _ = test_parser_cache.cache_info()
+        self.assertEqual(hits, 0)
+        self.assertEqual(misses, 1)
+
+        # Call 2: This should be a hit for cache_parser
+        fm = FeedMixer(feeds=["atom"], num_keep=2, sess=mc, parser_cache=test_parser_cache)
+        _ = fm.mixed_entries # This triggers __fetch_entries again, which calls cache_parser with the same input
+        hits, misses, _, _ = test_parser_cache.cache_info()
         self.assertEqual(hits, 1)
         self.assertEqual(misses, 1)
 
@@ -142,9 +150,10 @@ class TestMixedEntries(unittest.TestCase):
         """
         Test with multiple good URLs.
         """
-        cache_parser.cache_clear()
         mc = build_stub_session()
         fm = FeedMixer(feeds=["atom", "rss", "atom"], num_keep=2, sess=mc)
+        fm.cache_parser.cache_clear() # Clear any existing cache for this test
+
         me = fm.mixed_entries
         mc.get.assert_has_calls(
             [

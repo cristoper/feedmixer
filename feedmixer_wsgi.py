@@ -16,12 +16,15 @@ because it creates the logfiles ('fm.log' and 'fm.log.1') there.
 .. _gunicorn: http://gunicorn.org/
 """
 
+import functools
 import logging
 import os
 import sys
 
 import cachecontrol
 import requests
+import feedparser
+from feedmixer import ParserCacheCallable
 
 from feedmixer_api import wsgi_app
 
@@ -46,7 +49,23 @@ except ValueError:
     TIMEOUT = 30
 
 
-# all requests share a requests.session object so they can share a CacheControl cache
+try:
+    CACHE_SIZE = int(os.environ.get("FM_CACHE_SIZE", "128"))
+except ValueError:
+    print(
+        f"feedmixer_wsgi: Invalid cache size value '{os.environ.get('FM_CACHE_SIZE')}'. Defaulting to 128.",
+        file=sys.stderr,
+    )
+    CACHE_SIZE = 128
+
+
+# Application-wide memoized parser
+PARSER_CACHE: ParserCacheCallable = functools.lru_cache(maxsize=CACHE_SIZE)(
+    feedparser.parse
+)
+
+
+# All requests share a requests.session object so they can share a CacheControl cache
 SESS = cachecontrol.CacheControl(requests.session())
 
 
@@ -67,7 +86,12 @@ def application(environ, start_response):
     root_logger.addHandler(handler)
 
     # setup and return actual app:
-    api = wsgi_app(sess=SESS, allow_cors=ALLOW_CORS, timeout=TIMEOUT)
+    api = wsgi_app(
+        sess=SESS,
+        allow_cors=ALLOW_CORS,
+        timeout=TIMEOUT,
+        parser_cache=PARSER_CACHE,
+    )
     return api(environ, start_response)
 
 

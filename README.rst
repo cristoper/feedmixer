@@ -10,9 +10,7 @@ Status
 Changelog
 ~~~~~~~~~
 
-- v2.5.0_ Change logging from file to stderr. Configuration is now handled by
-  environment variables: ``FM_LOG_LEVEL`` for log level, ``FM_ALLOW_CORS`` for
-  CORS headers, and ``FM_TIMEOUT`` for request timeouts.
+- v2.5.0_ Change logging from file to stderr. Configuration is now handled by environment variables: :ref:`FM_LOG_LEVEL <logging-config>` for log level, :ref:`FM_ALLOW_CORS <cors-config>` for CORS headers, :ref:`FM_TIMEOUT <timeout-config>` for request timeouts, and :ref:`FM_CACHE_SIZE <cache-size-config>` for the number of feed parse results to cache in memory.
 - v2.4.1_ Fix bug where RSS dates were potentially sorted incorrectly (d685db15_)
 - v2.4.0_ Migrate from pipenv to uv and update dependencies. `feedgenerator` now produces slightly different output including JSONFeed 1.1.
 - v2.3.2_ Update dependencies to use upstream feedparser now that the fix for `this bug <https://github.com/kurtmckee/feedparser/pull/260>`_ has been merged.
@@ -97,6 +95,8 @@ care of your required restrictions (Nginx is a good choice), or/and use
 suitable WSGI middleware.
 
 
+.. _cors-config:
+
 CORS
 ------------
 
@@ -125,6 +125,8 @@ environment variable. This provides more control and keeps application
 configuration separate from deployment-specific concerns.
 
 
+.. _logging-config:
+
 Logging
 ------------
 
@@ -139,6 +141,8 @@ For example:
    $ FM_LOG_LEVEL=DEBUG gunicorn feedmixer_wsgi
 
 
+.. _timeout-config:
+
 Timeout
 ------------
 
@@ -148,6 +152,20 @@ environment variable. The value is in seconds, and the default is ``30``.
 .. code-block:: bash
 
    $ FM_TIMEOUT=12 gunicorn feedmixer_wsgi
+
+
+.. _cache-size-config:
+
+Cache Size
+------------
+
+The maximum number of parsed feeds to keep in the in-memory cache can be
+configured with the ``FM_CACHE_SIZE`` environment variable. The value is an
+integer, and the default is ``128``.
+
+.. code-block:: bash
+
+   $ FM_CACHE_SIZE=256 gunicorn feedmixer_wsgi
 
 
 Installation

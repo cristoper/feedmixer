@@ -58,15 +58,7 @@ import requests
 from feedgenerator import Atom1Feed, Rss201rev2Feed, SyndicationFeed
 from jsonfeed import JSONFeed
 
-
 DEFAULT_TIMEOUT = 30
-
-
-# Memoize results from parser
-# TODO: make maxsize user-configurable
-@functools.lru_cache(maxsize=128)
-def cache_parser(text: str) -> feedparser.util.FeedParserDict:
-    return feedparser.parse(text)
 
 
 # Types:
@@ -102,21 +94,22 @@ logger = logging.getLogger(__name__)
 class FeedMixer(object):
     def __init__(
         self,
-        title="Title",
-        link="",
-        desc="",
+        title: str = "Title",
+        link: str = "",
+        desc: str = "",
         feeds: List[str] = [],
-        num_keep=3,
-        prefer_summary=True,
-        max_threads=10,
-        max_feeds=100,
+        num_keep: int = 3,
+        prefer_summary: bool = True,
+        max_threads: int = 10,
+        max_feeds: int = 100,
         sess: Optional[requests.Session] = None,
         timeout: int = DEFAULT_TIMEOUT,
+        parser_cache = None,
     ) -> None:
         """
         __init__(self, title, link='', desc='', feeds=[], num_keep=3, \
             max_thread=5, max_feeds=100,
-            sess=requests.Session())
+            sess=requests.Session(), parser_cache=None)
 
         Args:
             title: the title of the generated feed
@@ -129,11 +122,13 @@ class FeedMixer(object):
             max_threads: the maximum number of threads to spin up while fetching
             feeds
             max_feeds: the maximum number of feeds to fetch
-                injectable for testing purposes)
             sess: the requests.session object to use for making http GET
                 requests. You can pass in a session object that caches results (see
                 the cachecontrol package) or sets custom headers, etc. If not
                 set, a new default session will be used per request.
+            timeout: the timeout for http requests in seconds.
+            parser_cache: A functools.lru_cache-wrapped feedparser.parse function.
+                If None, a new lru_cache with maxsize=128 will be created for this instance.
         """
         self.title = title
         self.link = link
@@ -144,6 +139,10 @@ class FeedMixer(object):
         self.prefer_summary = prefer_summary
         self.max_threads = max_threads
         self.timeout = timeout
+        if parser_cache is None:
+            self.cache_parser = functools.lru_cache(maxsize=128)(feedparser.parse)
+        else:
+            self.cache_parser = parser_cache
         self._mixed_entries = []  # type: List[EntryMetadata]
         self._error_urls = {}  # type: error_dict_t
         if sess is None:
@@ -251,9 +250,9 @@ class FeedMixer(object):
                 logger.info("Fetched {}".format(url))
                 try:
                     resp = future.result()
-                    f = cache_parser(resp.text)
+                    f = self.cache_parser(resp.text)
 
-                    logger.debug(cache_parser.cache_info())
+                    logger.debug(self.cache_parser.cache_info())
                     logger.info("Got feed from feedparser {}".format(url))
                     # logger.debug("Feed: {}".format(f))
 
