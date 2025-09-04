@@ -27,6 +27,7 @@ import requests
 from feedmixer_api import wsgi_app
 
 # envar configs
+ALLOW_CORS = bool(os.environ.get("FM_ALLOW_CORS"))
 LOG_LEVEL_NAME = os.environ.get("FM_LOG_LEVEL", "INFO").upper()
 
 LOG_LEVEL = logging.getLevelName(LOG_LEVEL_NAME)
@@ -60,7 +61,7 @@ def application(environ, start_response):
     root_logger.addHandler(handler)
 
     # setup and return actual app:
-    api = wsgi_app(sess=SESS)
+    api = wsgi_app(sess=SESS, allow_cors=ALLOW_CORS)
     return api(environ, start_response)
 
 

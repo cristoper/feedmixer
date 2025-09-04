@@ -62,6 +62,12 @@ import requests
 
 from feedmixer import FeedMixer
 
+
+class CORSComponent:
+    def process_response(self, req, resp, resource, req_succeeded):
+        resp.set_header("Access-Control-Allow-Origin", "*")
+
+
 ParsedQS = NamedTuple("ParsedQS", [("f", List[str]), ("n", int), ("full", bool)])
 
 
@@ -171,6 +177,7 @@ def wsgi_app(
     title="FeedMixer feed",
     desc="{type} feed created by FeedMixer.",
     sess: requests.session = requests.session(),
+    allow_cors: bool = False,
 ) -> falcon.App:
     """
     Creates the Falcon api object (a WSGI-compliant callable)
@@ -181,7 +188,11 @@ def wsgi_app(
     rss = MixedFeed(ftype="rss", title=title, desc=desc, sess=sess)
     jsn = MixedFeed(ftype="json", title=title, desc=desc, sess=sess)
 
-    api = falcon.App()
+    middleware = []
+    if allow_cors:
+        middleware.append(CORSComponent())
+
+    api = falcon.App(middleware=middleware)
     api.add_route("/atom", atom)
     api.add_route("/rss", rss)
     api.add_route("/json", jsn)

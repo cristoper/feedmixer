@@ -10,7 +10,7 @@ Status
 Changelog
 ~~~~~~~~~
 
-- v2.5.0_ Change logging from file to stderr.
+- v2.5.0_ Change logging from file to stderr. Log level can now be set with ``FM_LOG_LEVEL``. A new environment variable ``FM_ALLOW_CORS`` allows connections from any domain to make local testing easier.
 - v2.4.1_ Fix bug where RSS dates were potentially sorted incorrectly (d685db15_)
 - v2.4.0_ Migrate from pipenv to uv and update dependencies. `feedgenerator` now produces slightly different output including JSONFeed 1.1.
 - v2.3.2_ Update dependencies to use upstream feedparser now that the fix for `this bug <https://github.com/kurtmckee/feedparser/pull/260>`_ has been merged.
@@ -93,6 +93,34 @@ FeedMixer does not (yet?) do any resource restriction itself:
 To protect your installation either configure a front-end http proxy to take
 care of your required restrictions (Nginx is a good choice), or/and use
 suitable WSGI middleware.
+
+
+CORS
+------------
+
+The included web interface (`html/feedmixer.html`) is a separate frontend
+application. For it to communicate with the API during local development, the API
+must send Cross-Origin Resource Sharing (CORS) headers. This is necessary if
+you serve the HTML file from a different origin (protocol, domain, or port)
+than the API.
+
+To enable this for development, set the ``FM_ALLOW_CORS`` environment variable
+to any non-empty value when launching the server.
+
+For example:
+
+.. code-block:: bash
+
+   $ FM_ALLOW_CORS=1 gunicorn feedmixer_wsgi
+
+When this variable is set, the API will include the
+``Access-Control-Allow-Origin: *`` header in all responses, allowing the frontend
+to make requests from any origin.
+
+In a production environment, it is recommended to configure a front-end reverse
+proxy like Nginx to set the appropriate CORS headers instead of relying on this
+environment variable. This provides more control and keeps application
+configuration separate from deployment-specific concerns.
 
 
 Logging
@@ -240,6 +268,12 @@ $ docker build . -t feedmixer
 Run it in the foreground::
 
 $ docker run -p --rm 8000:8000 feedmixer
+
+You can set configuration environment variables using the ``-e`` flag:
+
+.. code-block:: bash
+
+   $ docker run --rm -p 8000:8000 -e FM_LOG_LEVEL=DEBUG -e FM_ALLOW_CORS=1 feedmixer
 
 Now from another terminal you should be able to connect to FeedMixer on
 localhost port 8000 just as in the example above.
