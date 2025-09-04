@@ -26,7 +26,6 @@ import requests
 
 from feedmixer_api import wsgi_app
 
-LOG_PATH = "fm.log"
 LOG_LEVEL = logging.INFO
 # LOG_LEVEL = logging.DEBUG
 TIMEOUT = 120  # time to wait for http requests (seconds)
@@ -38,21 +37,11 @@ SESS = cachecontrol.CacheControl(requests.session())
 
 def application(environ, start_response):
     """
-    Wrap the main WSGI app so that we can intercept the 'wsgi.multiprocess'
-    environment variable to set up logging accordingly.
+    Wrap the main WSGI app to set up logging to stderr.
     """
-    pid = multiprocessing.current_process().pid
-
-    is_multiprocess = environ.get("wsgi.multiprocess", False)
-    if is_multiprocess:
-        # log to the syslog daemon
-        handler = logging.handlers.SysLogHandler(address="/dev/log")
-    else:
-        # Setup root logger to log to rotating log file
-        handler = logging.handlers.RotatingFileHandler(
-            LOG_PATH, maxBytes=100000, backupCount=1
-        )
-    format_str = "fm-%(name)s-" + "%d" % pid + ": "
+    # Log to stderr
+    handler = logging.StreamHandler(sys.stderr)
+    format_str = "%(name)s: "
     format_str += "%(asctime)s %(levelname)s:%(message)s"
     formatter = logging.Formatter(format_str)
     handler.setFormatter(formatter)

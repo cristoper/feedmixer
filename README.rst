@@ -10,6 +10,7 @@ Status
 Changelog
 ~~~~~~~~~
 
+- v2.5.0_ Change logging from file to stderr.
 - v2.4.1_ Fix bug where RSS dates were potentially sorted incorrectly (d685db15_)
 - v2.4.0_ Migrate from pipenv to uv and update dependencies. `feedgenerator` now produces slightly different output including JSONFeed 1.1.
 - v2.3.2_ Update dependencies to use upstream feedparser now that the fix for `this bug <https://github.com/kurtmckee/feedparser/pull/260>`_ has been merged.
@@ -21,6 +22,7 @@ Changelog
 
 - v1.0.0_ Stable API. I'm using it in production for small personal "planet"-like feed aggregators.
 
+.. _v2.5.0: https://github.com/cristoper/feedmixer/tree/v2.5.0
 .. _v2.4.1: https://github.com/cristoper/feedmixer/tree/v2.4.1
 .. _v2.4.0: https://github.com/cristoper/feedmixer/tree/v2.4.0
 .. _v2.3.2: https://github.com/cristoper/feedmixer/tree/v2.3.2
@@ -130,10 +132,6 @@ $ . .venv/bin/activate
 $ uv sync
 $ uv pip install gunicorn
 $ gunicorn feedmixer_wsgi
-
-Note that the top-level install directory must be writable by the server
-running the app, because it creates the logfiles ('fm.log' and 'fm.log.1')
-there.
 
 As an example, assuming an instance of the FeedMixer app is running on the localhost on port 8000, let's fetch the newest entry each from the following Atom and RSS feeds:
 
@@ -246,8 +244,7 @@ Troubleshooting
 ---------------
 
 Using the provided `feedmixer_wsgi.py` application, information and errors are
-logged to the file `fm.log` in the directory the application is started from
-(auto rotated with a single old log called `fm.1.log`).
+logged to `stderr`.
 
 Any errors encountered in fetching and parsing remote feeds are reported in a
 custom HTTP header called `X-fm-errors`.
