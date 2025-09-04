@@ -40,12 +40,6 @@ Feeds are fetched in parallel (using threads).
 If any of the `feeds` URLs cannot be fetched or parsed, the errors will be
 reported in the `error_urls` attribute.
 
-To set a timeout on network requests, do this in your app::
-
->>> TIMEOUT = 120  # time to wait for http requests (seconds)
->>> import socket
->>> socket.setdefaulttimeout(TIMEOUT)
-
 Interface
 ---------
 """
@@ -63,6 +57,9 @@ import feedparser
 import requests
 from feedgenerator import Atom1Feed, Rss201rev2Feed, SyndicationFeed
 from jsonfeed import JSONFeed
+
+
+DEFAULT_TIMEOUT = 30
 
 
 # Memoize results from parser
@@ -114,6 +111,7 @@ class FeedMixer(object):
         max_threads=10,
         max_feeds=100,
         sess: Optional[requests.Session] = None,
+        timeout: int = DEFAULT_TIMEOUT,
     ) -> None:
         """
         __init__(self, title, link='', desc='', feeds=[], num_keep=3, \
@@ -145,6 +143,7 @@ class FeedMixer(object):
         self._num_keep = num_keep
         self.prefer_summary = prefer_summary
         self.max_threads = max_threads
+        self.timeout = timeout
         self._mixed_entries = []  # type: List[EntryMetadata]
         self._error_urls = {}  # type: error_dict_t
         if sess is None:
@@ -238,7 +237,7 @@ class FeedMixer(object):
         self._error_urls = {}
 
         def fetch(url: str) -> requests.Response:
-            r = self.sess.get(url)
+            r = self.sess.get(url, timeout=self.timeout)
             r.raise_for_status()
             # NOTE: I tried doing the parsing here in the threads, but it was
             # actually a bit slower than doing it all serially on the main

@@ -60,7 +60,7 @@ from typing import List, NamedTuple
 import falcon
 import requests
 
-from feedmixer import FeedMixer
+from feedmixer import DEFAULT_TIMEOUT, FeedMixer
 
 
 class CORSComponent:
@@ -112,6 +112,7 @@ class MixedFeed:
         title="FeedMixer feed",
         desc="{type} feed created by FeedMixer.",
         sess: requests.session = requests.session(),
+        timeout: int = DEFAULT_TIMEOUT,
     ) -> None:
         """
         :param ftype: one of 'atom', 'rss', or 'json'
@@ -124,6 +125,7 @@ class MixedFeed:
         self.title = title
         self.desc = desc.format(type=ftype)
         self.sess = sess
+        self.timeout = timeout
 
     def on_get(self, req: falcon.Request, resp: falcon.Response) -> None:
         """
@@ -146,6 +148,7 @@ class MixedFeed:
             desc=self.desc,
             link=req.uri,
             sess=self.sess,
+            timeout=self.timeout,
         )
 
         # dynamically find and call appropriate method based on ftype:
@@ -178,15 +181,16 @@ def wsgi_app(
     desc="{type} feed created by FeedMixer.",
     sess: requests.session = requests.session(),
     allow_cors: bool = False,
+    timeout: int = DEFAULT_TIMEOUT,
 ) -> falcon.App:
     """
     Creates the Falcon api object (a WSGI-compliant callable)
 
     See `FeedMixer` docstring for parameter descriptions.
     """
-    atom = MixedFeed(ftype="atom", title=title, desc=desc, sess=sess)
-    rss = MixedFeed(ftype="rss", title=title, desc=desc, sess=sess)
-    jsn = MixedFeed(ftype="json", title=title, desc=desc, sess=sess)
+    atom = MixedFeed(ftype="atom", title=title, desc=desc, sess=sess, timeout=timeout)
+    rss = MixedFeed(ftype="rss", title=title, desc=desc, sess=sess, timeout=timeout)
+    jsn = MixedFeed(ftype="json", title=title, desc=desc, sess=sess, timeout=timeout)
 
     middleware = []
     if allow_cors:

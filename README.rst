@@ -10,7 +10,9 @@ Status
 Changelog
 ~~~~~~~~~
 
-- v2.5.0_ Change logging from file to stderr. Log level can now be set with ``FM_LOG_LEVEL``. A new environment variable ``FM_ALLOW_CORS`` allows connections from any domain to make local testing easier.
+- v2.5.0_ Change logging from file to stderr. Configuration is now handled by
+  environment variables: ``FM_LOG_LEVEL`` for log level, ``FM_ALLOW_CORS`` for
+  CORS headers, and ``FM_TIMEOUT`` for request timeouts.
 - v2.4.1_ Fix bug where RSS dates were potentially sorted incorrectly (d685db15_)
 - v2.4.0_ Migrate from pipenv to uv and update dependencies. `feedgenerator` now produces slightly different output including JSONFeed 1.1.
 - v2.3.2_ Update dependencies to use upstream feedparser now that the fix for `this bug <https://github.com/kurtmckee/feedparser/pull/260>`_ has been merged.
@@ -135,6 +137,17 @@ For example:
 .. code-block:: bash
 
    $ FM_LOG_LEVEL=DEBUG gunicorn feedmixer_wsgi
+
+
+Timeout
+------------
+
+The timeout for fetching remote feeds can be configured with the ``FM_TIMEOUT``
+environment variable. The value is in seconds, and the default is ``30``.
+
+.. code-block:: bash
+
+   $ FM_TIMEOUT=12 gunicorn feedmixer_wsgi
 
 
 Installation
@@ -273,7 +286,7 @@ You can set configuration environment variables using the ``-e`` flag:
 
 .. code-block:: bash
 
-   $ docker run --rm -p 8000:8000 -e FM_LOG_LEVEL=DEBUG -e FM_ALLOW_CORS=1 feedmixer
+   $ docker run --rm -p 8000:8000 -e FM_LOG_LEVEL=DEBUG -e FM_ALLOW_CORS=1 -e FM_TIMEOUT=20 feedmixer
 
 Now from another terminal you should be able to connect to FeedMixer on
 localhost port 8000 just as in the example above.

@@ -18,7 +18,6 @@ because it creates the logfiles ('fm.log' and 'fm.log.1') there.
 
 import logging
 import os
-import socket
 import sys
 
 import cachecontrol
@@ -29,7 +28,6 @@ from feedmixer_api import wsgi_app
 # envar configs
 ALLOW_CORS = bool(os.environ.get("FM_ALLOW_CORS"))
 LOG_LEVEL_NAME = os.environ.get("FM_LOG_LEVEL", "INFO").upper()
-
 LOG_LEVEL = logging.getLevelName(LOG_LEVEL_NAME)
 if not isinstance(LOG_LEVEL, int):
     print(
@@ -37,8 +35,16 @@ if not isinstance(LOG_LEVEL, int):
         file=sys.stderr,
     )
     LOG_LEVEL = logging.INFO
-TIMEOUT = 40  # time to wait for http requests (seconds)
-socket.setdefaulttimeout(TIMEOUT)
+
+try:
+    TIMEOUT = int(os.environ.get("FM_TIMEOUT", "30"))
+except ValueError:
+    print(
+        f"feedmixer_wsgi: Invalid timeout value '{os.environ.get('FM_TIMEOUT')}'. Defaulting to 30.",
+        file=sys.stderr,
+    )
+    TIMEOUT = 30
+
 
 # all requests share a requests.session object so they can share a CacheControl cache
 SESS = cachecontrol.CacheControl(requests.session())
@@ -61,7 +67,7 @@ def application(environ, start_response):
     root_logger.addHandler(handler)
 
     # setup and return actual app:
-    api = wsgi_app(sess=SESS, allow_cors=ALLOW_CORS)
+    api = wsgi_app(sess=SESS, allow_cors=ALLOW_CORS, timeout=TIMEOUT)
     return api(environ, start_response)
 
 
