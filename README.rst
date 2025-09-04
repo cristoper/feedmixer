@@ -95,6 +95,20 @@ care of your required restrictions (Nginx is a good choice), or/and use
 suitable WSGI middleware.
 
 
+Logging
+------------
+
+The log level can be configured via the ``FM_LOG_LEVEL`` environment variable.
+Valid values are ``DEBUG``, ``INFO``, ``WARNING``, ``ERROR``, ``CRITICAL``. The
+default is ``INFO``.
+
+For example:
+
+.. code-block:: bash
+
+   $ FM_LOG_LEVEL=DEBUG gunicorn feedmixer_wsgi
+
+
 Installation
 ------------
 
@@ -122,10 +136,10 @@ The project consists of three modules:
 Run Locally
 ~~~~~~~~~~~
 
-The feedmixer_wsgi module instantiates the feedmixer WSGI object (with sensible
-defaults and a rotating logfile) as both `api` and `application` (default names
-used by common WSGI servers). To start the service with gunicorn_, for example,
-clone the repository and in the root directory run::
+The feedmixer_wsgi module instantiates the feedmixer WSGI object (sets up
+logging to stderr) as both `api` and `application` (default names used by
+common WSGI servers). To start the service with gunicorn_, for example, clone
+the repository and in the root directory run::
 
 $ uv venv
 $ . .venv/bin/activate

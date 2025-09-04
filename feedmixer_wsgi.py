@@ -17,18 +17,26 @@ because it creates the logfiles ('fm.log' and 'fm.log.1') there.
 """
 
 import logging
-import logging.handlers
-import multiprocessing
+import os
 import socket
+import sys
 
 import cachecontrol
 import requests
 
 from feedmixer_api import wsgi_app
 
-LOG_LEVEL = logging.INFO
-# LOG_LEVEL = logging.DEBUG
-TIMEOUT = 120  # time to wait for http requests (seconds)
+# envar configs
+LOG_LEVEL_NAME = os.environ.get("FM_LOG_LEVEL", "INFO").upper()
+
+LOG_LEVEL = logging.getLevelName(LOG_LEVEL_NAME)
+if not isinstance(LOG_LEVEL, int):
+    print(
+        f"feedmixer_wsgi: Invalid log level '{LOG_LEVEL_NAME}'. Defaulting to INFO.",
+        file=sys.stderr,
+    )
+    LOG_LEVEL = logging.INFO
+TIMEOUT = 40  # time to wait for http requests (seconds)
 socket.setdefaulttimeout(TIMEOUT)
 
 # all requests share a requests.session object so they can share a CacheControl cache
