@@ -90,7 +90,6 @@ FeedMixer does not (yet?) do any resource restriction itself:
 
 - Authorization
 - Rate limiting
-- CORS restriction
 
 To protect your installation either configure a front-end http proxy to take
 care of your required restrictions (Nginx is a good choice), or/and use
