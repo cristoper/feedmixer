@@ -24,7 +24,6 @@ import sys
 import cachecontrol
 import requests
 import feedparser
-from feedmixer import ParserCacheCallable
 
 from feedmixer_api import wsgi_app
 
@@ -60,7 +59,7 @@ except ValueError:
 
 
 # Application-wide memoized parser
-PARSER_CACHE: ParserCacheCallable = functools.lru_cache(maxsize=CACHE_SIZE)(
+PARSER_CACHE = functools.lru_cache(maxsize=CACHE_SIZE)(
     feedparser.parse
 )
 

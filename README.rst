@@ -10,6 +10,7 @@ Status
 Changelog
 ~~~~~~~~~
 
+- v2.5.1_ Fix regression that was preventing wsgi app from starting
 - v2.5.0_ Change logging from file to stderr. Configuration is now handled by environment variables: `FM_LOG_LEVEL <#logging>`_ for log level, `FM_ALLOW_CORS <#cors>`_ for CORS headers, `FM_TIMEOUT <#timeout>`_ for request timeouts, and `FM_CACHE_SIZE <#cache-size>`_ for the number of feed parse results to cache in memory.
 - v2.4.1_ Fix bug where RSS dates were potentially sorted incorrectly (d685db15_)
 - v2.4.0_ Migrate from pipenv to uv and update dependencies. `feedgenerator` now produces slightly different output including JSONFeed 1.1.
@@ -22,6 +23,7 @@ Changelog
 
 - v1.0.0_ Stable API. I'm using it in production for small personal "planet"-like feed aggregators.
 
+.. _v2.5.1: https://github.com/cristoper/feedmixer/tree/v2.5.1
 .. _v2.5.0: https://github.com/cristoper/feedmixer/tree/v2.5.0
 .. _v2.4.1: https://github.com/cristoper/feedmixer/tree/v2.4.1
 .. _v2.4.0: https://github.com/cristoper/feedmixer/tree/v2.4.0
