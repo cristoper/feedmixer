@@ -332,7 +332,7 @@ class FeedMixer(object):
                 metadata["author_name"] = e["author_detail"].get("name")
                 metadata["author_link"] = e["author_detail"].get("href")
 
-            # Keep original feed info (this is only serialized in the JSON feed)
+            # Keep original feed info (these are not currently rendered by any of the feed outputs)
             metadata["feed_link"] = e["feed_link"]
             metadata["feed_title"] = e["feed_title"]
 
